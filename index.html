@@ -1446,7 +1446,7 @@
       // viewer.OrbitControls.enablePan = false;
 
       ['touchstart', 'touchmove', 'touchend', 'gesturestart', 'gesturechange', 'gestureend'].forEach(evt => {
-        viewer.container.addEventListener(evt, e => {
+        container.addEventListener(evt, e => {
           e.preventDefault();
           e.stopPropagation();
         }, { passive: false });
