@@ -755,7 +755,7 @@
         correctAnswer: "B",
         maxBonus: 4.00,
         conditions: {
-          1: ["panorama/B_10028/B_10028_minOverlap/B_10028_MinOverlap_2.png", "panorama/B_10028/B_10028_minOverlap/B_10028_MinOverlap_5.png", "panorama/B_10028/B_10028_minOverlap/B_10028_MinOverlap_4.png", "panorama/B_10028/B_10028_minOverlap/B_10028_MinOverlap_6.png", "panorama/B_10028/B_10028_minOverlap/B_10028_minOverlap_1.png", "panorama/B_10028/B_10028_minOverlap/B_10028_minOverlap_3.png"],
+          1: ["panorama/B_10028/B_10028_minOverlap/B_10028_MinOverlap_2.png", "panorama/B_10028/B_10028_minOverlap/B_10028_MinOverlap_5.png", "panorama/B_10028/B_10028_minOverlap/B_10028_MinOverlap_4.png", "panorama/B_10028/B_10028_minOverlap/B_10028_MinOverlap_6.png", "panorama/B_10028/B_10028_minOverlap/B_10028_MinOverlap_1.png", "panorama/B_10028/B_10028_minOverlap/B_10028_MinOverlap_3.png"],
           2: ["panorama/B_10028/B_10028_maxOverlap_NoLandmarks/B_10028_MaxOverlap_6.png", "panorama/B_10028/B_10028_maxOverlap_NoLandmarks/B_10028_MaxOverlap_3.png", "panorama/B_10028/B_10028_maxOverlap_NoLandmarks/B_10028_MaxOverlap_5.png", "panorama/B_10028/B_10028_maxOverlap_NoLandmarks/B_10028_MaxOverlap_2.png", "panorama/B_10028/B_10028_maxOverlap_NoLandmarks/B_10028_MaxOverlap_4.png", "panorama/B_10028/B_10028_maxOverlap_NoLandmarks/B_10028_MaxOverlap_1.png"],
           3: ["panorama/B_10028/B_10028_maxOverlap_NoLandmarks/B_10028_MaxOverlap_1.png", "panorama/B_10028/B_10028_maxOverlap_NoLandmarks/B_10028_MaxOverlap_2.png", "panorama/B_10028/B_10028_maxOverlap_NoLandmarks/B_10028_MaxOverlap_3.png", "panorama/B_10028/B_10028_maxOverlap_NoLandmarks/B_10028_MaxOverlap_4.png", "panorama/B_10028/B_10028_maxOverlap_NoLandmarks/B_10028_MaxOverlap_5.png", "panorama/B_10028/B_10028_maxOverlap_NoLandmarks/B_10028_MaxOverlap_6.png"],
           4: ["panorama/B_10028/B_10028_maxOverlap_Landmarks/B_10028_MaxOverlap_LM_6.png", "panorama/B_10028/B_10028_maxOverlap_Landmarks/B_10028_MaxOverlap_LM_3.png", "panorama/B_10028/B_10028_maxOverlap_Landmarks/B_10028_MaxOverlap_LM_5.png", "panorama/B_10028/B_10028_maxOverlap_Landmarks/B_10028_MaxOverlap_LM_2.png", "panorama/B_10028/B_10028_maxOverlap_Landmarks/B_10028_MaxOverlap_LM_4.png", "panorama/B_10028/B_10028_maxOverlap_Landmarks/B_10028_MaxOverlap_LM_1.png"],
@@ -1431,6 +1431,8 @@
         output: 'stereo'  // Enable stereo rendering for better fullscreen experience
       });
       viewer.add(pano);
+
+      viewer.OrbitControls.enableTouch = false; 
 
       // Disable touch input only
       viewer.container.addEventListener('touchstart', (e) => {
