@@ -1432,27 +1432,14 @@
       });
       viewer.add(pano);
 
-      viewer.OrbitControls.enableTouch = false; 
+      container.addEventListener('touchstart', e => e.preventDefault(), { passive: false });
+      container.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
+      container.addEventListener('touchend', e => e.preventDefault(), { passive: false });
 
-      // Disable touch input only
-      viewer.container.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-      }, { passive: false });
+      container.addEventListener('gesturestart', e => e.preventDefault(), { passive: false });
+      container.addEventListener('gesturechange', e => e.preventDefault(), { passive: false });
+      container.addEventListener('gestureend', e => e.preventDefault(), { passive: false });
 
-      viewer.container.addEventListener('touchmove', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-      }, { passive: false });
-
-      viewer.container.addEventListener('touchend', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-      }, { passive: false });
-
-      viewer.container.addEventListener('gesturestart', e => e.preventDefault(), { passive: false });
-      viewer.container.addEventListener('gesturechange', e => e.preventDefault(), { passive: false });
-      viewer.container.addEventListener('gestureend', e => e.preventDefault(), { passive: false });
 
       tut_progressStartTime = Date.now(); // Reset progress start time for new view
 
