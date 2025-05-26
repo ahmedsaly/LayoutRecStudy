@@ -1432,6 +1432,11 @@
       });
       viewer.add(pano);
 
+      viewer.OrbitControls.touches = {
+        ONE: null,
+        TWO: null
+      };
+
       container.addEventListener('touchstart', e => e.preventDefault(), { passive: false });
       container.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
       container.addEventListener('touchend', e => e.preventDefault(), { passive: false });
