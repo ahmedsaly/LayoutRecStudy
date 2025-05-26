@@ -618,8 +618,8 @@
 
     // Get experiment key from URL (1-5)
     const urlParams = new URLSearchParams(window.location.search);
-    const experimentKey = parseInt(urlParams.get('exp'));
-    const subject_id = urlParams.get('id');
+    const experimentKey = parseInt(urlParams.get('exp')) || 1;
+    const subject_id = urlParams.get('id') || 789;
 
     if (!subject_id || !experimentKey) {
       // Not coming from Prolific – block access
@@ -627,6 +627,29 @@
       alert("Invalid Access");
       window.location.href = "/error-page.html";
     }
+
+    // localStorage.removeItem(`layout_exp_started_${subject_id}`); 
+
+    // Optional: Warn on reload
+    window.onbeforeunload = function () {
+      return "If you leave or refresh, your progress may be lost and you may not be paid.";
+    };
+
+    // // Prevent repeat participation in the same browser
+    // const localKey = `layout_exp_started_${subject_id}`;
+
+    // if (localStorage.getItem(localKey)) {
+    //   // alert("You have already started this study in this browser. Restarting is not allowed.");
+    //   document.body.innerHTML = `
+    //     <div style="text-align:center; padding-top: 20vh;">
+    //       <h2 style="color: red;">You cannot restart this study.</h2>
+    //       <p>Please return to Prolific to complete or contact support if this is an error.</p>
+    //     </div>
+    //   `;
+    //   throw new Error("Blocked due to localStorage flag.");
+    // } else {
+    //   localStorage.setItem(localKey, "true");
+    // }
 
     const requiredSections = 4; 
     const getTimestamp = () => new Date().toISOString();
@@ -2380,6 +2403,43 @@
     };
     timeline.push(tutorial_test);
 
+    const save_tutorial_data = saveData(`tutorial_${filename}`, () => {
+      const headers = [
+        "tutorial_participant_id",
+        "tutorial_layout_index",
+        "tutorial_start_time",
+        "tutorial_end_time",
+        "tutorial_view_count",
+        "tutorial_total_time",
+        "tutorial_view_durations",
+        "tutorial_progress_times",
+        "tutorial_selected_choice",
+        "tutorial_correct_choice",
+        "tutorial_is_correct",
+        "tutorial_confidence",
+        "tutorial_earned_bonus"
+      ].join(",");
+
+      const rows = tutorialLayoutData.map(layout => [
+        layout.tutorial_participant_id,
+        layout.tutorial_layout_index,
+        layout.tutorial_start_time,
+        layout.tutorial_end_time,
+        layout.tutorial_view_count,
+        layout.tutorial_total_time,
+        layout.tutorial_view_durations,
+        layout.tutorial_progress_times,
+        layout.tutorial_selected_choice,
+        layout.tutorial_correct_choice,
+        layout.tutorial_is_correct,
+        layout.tutorial_confidence,
+        layout.tutorial_earned_bonus
+      ].join(","));
+
+      return [headers, ...rows].join("\n");
+    });
+    timeline.push(save_tutorial_data);
+
     let currentLayoutIndex = 0;
     let totalEarned = baseMoney;
 
@@ -2487,6 +2547,7 @@
       
       // Disable Next View button and Submit button initially
       document.getElementById('nextViewBtn').disabled = true;
+      document.getElementById('nextViewBtn').style.cursor = ('not-allowed');
       document.getElementById('nextViewBtn').title = "Please view the whole scene to proceed";
       const submitBtn = document.getElementById('submitBtn');
       submitBtn.disabled = true;
@@ -2561,6 +2622,7 @@
             document.getElementById('nextViewBtn').disabled = false;
             document.getElementById('nextViewBtn').title = "You can now proceed to the next view";
             document.getElementById('nextViewBtn').classList.add('complete');
+            document.getElementById('nextViewBtn').style.cursor = '';
             document.getElementById('nextViewBtn').style.backgroundColor = '';
           } 
           else {
@@ -2617,7 +2679,13 @@
         }
 
         const section = Math.floor(longitude / angleThreshold);
+
+        // Track sections more precisely
         currentViewedAngles.add(section);
+
+        document.getElementById('nextViewBtn').classList.remove('complete');
+        document.getElementById('nextViewBtn').disabled = true;
+        document.getElementById('nextViewBtn').title = "Please view the whole scene to proceed";
         updateSections();
       };
 
@@ -2849,6 +2917,11 @@
 
         document.getElementById('revisitBtn').addEventListener('click', function() {
           if (!hasRevisited) {
+            logAreaChange('Revisit_phase')
+
+            const viewDuration = Date.now() - viewStartTime;
+            viewDurations.push(viewDuration);
+
             // Deduct fee once
             viewsForBonus++;
             updateMoneyDisplay();
@@ -2868,6 +2941,8 @@
             
             // Render first view again
             renderPanorama(layouts[currentLayoutIndex].panoramas[viewIndex], panoDiv);
+
+            viewStartTime = Date.now(); // Reset timing for new view
             
             // Enable next view button
             document.getElementById('nextViewBtn').disabled = false;
@@ -3303,42 +3378,6 @@
       return [headers, ...rows].join('\n');
     });
 
-    const save_tutorial_data = saveData(`tutorial_${filename}`, () => {
-      const headers = [
-        "tutorial_participant_id",
-        "tutorial_layout_index",
-        "tutorial_start_time",
-        "tutorial_end_time",
-        "tutorial_view_count",
-        "tutorial_total_time",
-        "tutorial_view_durations",
-        "tutorial_progress_times",
-        "tutorial_selected_choice",
-        "tutorial_correct_choice",
-        "tutorial_is_correct",
-        "tutorial_confidence",
-        "tutorial_earned_bonus"
-      ].join(",");
-
-      const rows = tutorialLayoutData.map(layout => [
-        layout.tutorial_participant_id,
-        layout.tutorial_layout_index,
-        layout.tutorial_start_time,
-        layout.tutorial_end_time,
-        layout.tutorial_view_count,
-        layout.tutorial_total_time,
-        layout.tutorial_view_durations,
-        layout.tutorial_progress_times,
-        layout.tutorial_selected_choice,
-        layout.tutorial_correct_choice,
-        layout.tutorial_is_correct,
-        layout.tutorial_confidence,
-        layout.tutorial_earned_bonus
-      ].join(","));
-
-      return [headers, ...rows].join("\n");
-    });
-
     const save_layout_data = saveData(`layouts_${filename}`, () => {
       const headers = [
         "participant_id",
@@ -3451,7 +3490,7 @@
     // Add to timeline
     timeline.push(save_data);
     timeline.push(save_PTT_data);
-    timeline.push(save_tutorial_data);
+    // timeline.push(save_tutorial_data);
     timeline.push(save_layout_data);
     timeline.push(save_log_data);
 
