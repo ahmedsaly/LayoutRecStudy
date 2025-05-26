@@ -2536,6 +2536,11 @@
         e.stopPropagation();
       }, { passive: false });
 
+      viewer.container.addEventListener('gesturestart', e => e.preventDefault(), { passive: false });
+      viewer.container.addEventListener('gesturechange', e => e.preventDefault(), { passive: false });
+      viewer.container.addEventListener('gestureend', e => e.preventDefault(), { passive: false });
+
+
 
       progressStartTime = Date.now(); // Reset progress start time for new view
 
