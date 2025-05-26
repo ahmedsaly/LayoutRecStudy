@@ -1433,30 +1433,7 @@
       viewer.add(pano);
 
       viewer.OrbitControls.enableZoom = false; // Disable all zoom
-      viewer.OrbitControls.noZoom = true;    
-      viewer.OrbitControls.enablePan = false;
-
-      viewer.OrbitControls.touches = {
-        ONE: -1, // invalid input to block it
-        TWO: -1
-      };
-
-      // Add touch-action CSS
-      viewer.container.style.touchAction = 'none';
-
-      // Block all touch events
-      ['touchstart', 'touchmove', 'touchend'].forEach(evt => {
-        viewer.container.addEventListener(evt, e => {
-          e.preventDefault();
-          e.stopPropagation();
-        }, { passive: false });
-      });
-
-      // Remove any existing touch controls configuration
-      delete viewer.OrbitControls.touches;
-
-      console.log('OrbitControls config:', viewer.OrbitControls);
-
+      viewer.OrbitControls.noZoom = true;
 
       tut_progressStartTime = Date.now(); // Reset progress start time for new view
 
@@ -2527,27 +2504,8 @@
       });
       viewer.add(pano);
 
-      viewer.OrbitControls.enableTouch = false; 
-
-      // Disable touch input only
-      viewer.container.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-      }, { passive: false });
-
-      viewer.container.addEventListener('touchmove', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-      }, { passive: false });
-
-      viewer.container.addEventListener('touchend', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-      }, { passive: false });
-
-      viewer.container.addEventListener('gesturestart', e => e.preventDefault(), { passive: false });
-      viewer.container.addEventListener('gesturechange', e => e.preventDefault(), { passive: false });
-      viewer.container.addEventListener('gestureend', e => e.preventDefault(), { passive: false });
+      viewer.OrbitControls.enableZoom = false; // Disable all zoom
+      viewer.OrbitControls.noZoom = true;
 
       progressStartTime = Date.now(); // Reset progress start time for new view
 
