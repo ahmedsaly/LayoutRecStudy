@@ -751,7 +751,7 @@
         conditions: {
           1: ["panorama/B_10028/B_10028_minOverlap/B_10028_MinOverlap_2.png", "panorama/B_10028/B_10028_minOverlap/B_10028_MinOverlap_5.png", "panorama/B_10028/B_10028_minOverlap/B_10028_MinOverlap_4.png", "panorama/B_10028/B_10028_minOverlap/B_10028_MinOverlap_6.png", "panorama/B_10028/B_10028_minOverlap/B_10028_minOverlap_1.png", "panorama/B_10028/B_10028_minOverlap/B_10028_minOverlap_3.png"],
           2: ["panorama/B_10028/B_10028_maxOverlap_NoLandmarks/B_10028_MaxOverlap_6.png", "panorama/B_10028/B_10028_maxOverlap_NoLandmarks/B_10028_MaxOverlap_3.png", "panorama/B_10028/B_10028_maxOverlap_NoLandmarks/B_10028_MaxOverlap_5.png", "panorama/B_10028/B_10028_maxOverlap_NoLandmarks/B_10028_MaxOverlap_2.png", "panorama/B_10028/B_10028_maxOverlap_NoLandmarks/B_10028_MaxOverlap_4.png", "panorama/B_10028/B_10028_maxOverlap_NoLandmarks/B_10028_MaxOverlap_1.png"],
-          3: ["panorama/B_10108/B_10028_maxOverlap_NoLandmarks/B_10028_MaxOverlap_1.png", "panorama/B_10028/B_10028_maxOverlap_NoLandmarks/B_10028_MaxOverlap_2.png", "panorama/B_10028/B_10028_maxOverlap_NoLandmarks/B_10028_MaxOverlap_3.png", "panorama/B_10028/B_10028_maxOverlap_NoLandmarks/B_10028_MaxOverlap_4.png", "panorama/B_10028/B_10028_maxOverlap_NoLandmarks/B_10028_MaxOverlap_5.png", "panorama/B_10028/B_10028_maxOverlap_NoLandmarks/B_10028_MaxOverlap_6.png"],
+          3: ["panorama/B_10028/B_10028_maxOverlap_NoLandmarks/B_10028_MaxOverlap_1.png", "panorama/B_10028/B_10028_maxOverlap_NoLandmarks/B_10028_MaxOverlap_2.png", "panorama/B_10028/B_10028_maxOverlap_NoLandmarks/B_10028_MaxOverlap_3.png", "panorama/B_10028/B_10028_maxOverlap_NoLandmarks/B_10028_MaxOverlap_4.png", "panorama/B_10028/B_10028_maxOverlap_NoLandmarks/B_10028_MaxOverlap_5.png", "panorama/B_10028/B_10028_maxOverlap_NoLandmarks/B_10028_MaxOverlap_6.png"],
           4: ["panorama/B_10028/B_10028_maxOverlap_Landmarks/B_10028_MaxOverlap_LM_6.png", "panorama/B_10028/B_10028_maxOverlap_Landmarks/B_10028_MaxOverlap_LM_3.png", "panorama/B_10028/B_10028_maxOverlap_Landmarks/B_10028_MaxOverlap_LM_5.png", "panorama/B_10028/B_10028_maxOverlap_Landmarks/B_10028_MaxOverlap_LM_2.png", "panorama/B_10028/B_10028_maxOverlap_Landmarks/B_10028_MaxOverlap_LM_4.png", "panorama/B_10028/B_10028_maxOverlap_Landmarks/B_10028_MaxOverlap_LM_1.png"],
           5: ["panorama/B_10028/B_10028_maxOverlap_Landmarks/B_10028_MaxOverlap_LM_1.png", "panorama/B_10028/B_10028_maxOverlap_Landmarks/B_10028_MaxOverlap_LM_2.png", "panorama/B_10028/B_10028_maxOverlap_Landmarks/B_10028_MaxOverlap_LM_3.png", "panorama/B_10028/B_10028_maxOverlap_Landmarks/B_10028_MaxOverlap_LM_4.png", "panorama/B_10028/B_10028_maxOverlap_Landmarks/B_10028_MaxOverlap_LM_5.png", "panorama/B_10028/B_10028_maxOverlap_Landmarks/B_10028_MaxOverlap_LM_6.png"]
         }
@@ -1442,6 +1442,9 @@
         e.stopPropagation();
       }, { passive: false });
 
+      viewer.container.addEventListener('gesturestart', e => e.preventDefault(), { passive: false });
+      viewer.container.addEventListener('gesturechange', e => e.preventDefault(), { passive: false });
+      viewer.container.addEventListener('gestureend', e => e.preventDefault(), { passive: false });
 
       tut_progressStartTime = Date.now(); // Reset progress start time for new view
 
@@ -2539,8 +2542,6 @@
       viewer.container.addEventListener('gesturestart', e => e.preventDefault(), { passive: false });
       viewer.container.addEventListener('gesturechange', e => e.preventDefault(), { passive: false });
       viewer.container.addEventListener('gestureend', e => e.preventDefault(), { passive: false });
-
-
 
       progressStartTime = Date.now(); // Reset progress start time for new view
 
