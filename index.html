@@ -621,11 +621,15 @@
     const experimentKey = parseInt(urlParams.get('exp'));
     const subject_id = urlParams.get('id');
 
-    if (!subject_id || !experimentKey) {
+    // Define valid experiment keys
+    const validExperimentKeys = [1, 2, 3, 4, 5];
+
+    if (!subject_id || !experimentKey || !validExperimentKeys.includes(experimentKey)) {
       // Not coming from Prolific – block access
       // document.write("<h2 style='color:red; text-align:center;'>Access denied. Please access this experiment through Prolific.</h2>");
       alert("Invalid Access");
       window.location.href = "/error-page.html";
+      throw new Error("Blocked due to invalid experiment key or missing ID.");
     }
 
     // localStorage.removeItem(`layout_exp_started_${subject_id}`); 
@@ -1421,6 +1425,23 @@
         output: 'stereo'  // Enable stereo rendering for better fullscreen experience
       });
       viewer.add(pano);
+
+      // Disable touch input only
+      viewer.container.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }, { passive: false });
+
+      viewer.container.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }, { passive: false });
+
+      viewer.container.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }, { passive: false });
+
 
       tut_progressStartTime = Date.now(); // Reset progress start time for new view
 
@@ -2490,6 +2511,23 @@
         output: 'stereo'  // Enable stereo rendering for better fullscreen experience
       });
       viewer.add(pano);
+
+      // Disable touch input only
+      viewer.container.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }, { passive: false });
+
+      viewer.container.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }, { passive: false });
+
+      viewer.container.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }, { passive: false });
+
 
       progressStartTime = Date.now(); // Reset progress start time for new view
 
