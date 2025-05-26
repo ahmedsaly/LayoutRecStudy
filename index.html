@@ -909,7 +909,7 @@
         name: "Welcome message"
       }
     };
-    timeline.push(welcome);
+    // timeline.push(welcome);
 
     // Add new comprehensive instruction message
     var experiment_instructions = {
@@ -942,7 +942,7 @@
         name: "Experiment Instructions"
       }
     };
-    timeline.push(experiment_instructions);
+    // timeline.push(experiment_instructions);
 
     // Instructions
     var PTT_instruction = {
@@ -959,7 +959,7 @@
           name: "PTT Instructions"
         }
     };
-    timeline.push(PTT_instruction );
+    // timeline.push(PTT_instruction );
 
     // Define the task parameters
     const TASK_ITEMS = [
@@ -1043,7 +1043,7 @@
         });
       }
     };
-    timeline.push(PTT_example);
+    // timeline.push(PTT_example);
 
     const PTT = {
       type: jsPsychHtmlButtonResponse,
@@ -1200,7 +1200,7 @@
         });
       },      
     };
-    timeline.push(PTT);
+    // timeline.push(PTT);
 
     // Helper function to draw the circle and lines
     function drawCircle(ctx, task, angle = null) {
@@ -1314,7 +1314,7 @@
           name: "Layout Recognition Instructions"
         }
     };
-    timeline.push(LR_instruction );
+    // timeline.push(LR_instruction );
 
     let tut_currentLayoutIndex = 0;
     let tut_totalEarned = tut_baseMoney;
@@ -1441,6 +1441,9 @@
         ONE: '',  // Disable 1-finger touch rotation
         TWO: ''   // Disable 2-finger pinch zoom
       };
+
+      viewer.OrbitControls.enableZoom = false;
+      // viewer.OrbitControls.enablePan = false;
 
       ['touchstart', 'touchmove', 'touchend', 'gesturestart', 'gesturechange', 'gestureend'].forEach(evt => {
         viewer.container.addEventListener(evt, e => {
@@ -1837,7 +1840,7 @@
         showTutorialStep();
       }
     };
-    timeline.push(LR_tutorial);
+    // timeline.push(LR_tutorial);
 
     const tutorial_test = {
       type: jsPsychHtmlButtonResponse,
