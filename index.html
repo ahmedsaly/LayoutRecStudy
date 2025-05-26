@@ -1448,7 +1448,7 @@
       // viewer.OrbitControls.enableRotate = true;
 
 
-      ['touchstart', 'touchmove', 'touchend', 'gesturestart', 'gesturechange', 'gestureend'].forEach(evt => {
+      ['touch', 'touchstart', 'touchmove', 'touchend', 'gesturestart', 'gesturechange', 'gestureend'].forEach(evt => {
         container.addEventListener(evt, e => {
           e.preventDefault();
           e.stopPropagation();
