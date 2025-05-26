@@ -1442,16 +1442,18 @@
       //   TWO: ''   // Disable 2-finger pinch zoom
       // };
 
-      viewer.OrbitControls.enabled = false;
-      viewer.OrbitControls.enableZoom = false;
-      viewer.OrbitControls.enablePan = true;
+      // viewer.OrbitControls.enabled = false;
+      // viewer.OrbitControls.enableZoom = false;
+      // viewer.OrbitControls.enablePan = true;
+      // viewer.OrbitControls.enableRotate = true;
 
-      // ['touchstart', 'touchmove', 'touchend', 'gesturestart', 'gesturechange', 'gestureend'].forEach(evt => {
-      //   container.addEventListener(evt, e => {
-      //     e.preventDefault();
-      //     e.stopPropagation();
-      //   }, { passive: false });
-      // });
+
+      ['touchstart', 'touchmove', 'touchend', 'gesturestart', 'gesturechange', 'gestureend'].forEach(evt => {
+        container.addEventListener(evt, e => {
+          e.preventDefault();
+          e.stopPropagation();
+        }, { passive: false });
+      });
 
 
       tut_progressStartTime = Date.now(); // Reset progress start time for new view
