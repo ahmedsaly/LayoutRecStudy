@@ -1432,10 +1432,16 @@
       });
       viewer.add(pano);
 
+      // viewer.OrbitControls.touches = {
+      //   ONE: null,
+      //   TWO: null
+      // };
+
       viewer.OrbitControls.touches = {
-        ONE: null,
-        TWO: null
+        ONE: '',  // Disable 1-finger touch rotation
+        TWO: ''   // Disable 2-finger pinch zoom
       };
+
 
       container.addEventListener('touchstart', e => e.preventDefault(), { passive: false });
       container.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
