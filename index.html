@@ -635,9 +635,15 @@
     // localStorage.removeItem(`layout_exp_started_${subject_id}`); 
 
     // Optional: Warn on reload
-    window.onbeforeunload = function () {
-      return "If you leave or refresh, your progress may be lost and you may not be paid.";
-    };
+    // window.onbeforeunload = function () {
+    //   return "If you leave or refresh, your progress may be lost and you may not be paid.";
+    // };
+
+    // To this (synchronous):
+    window.addEventListener('beforeunload', (e) => {
+      e.preventDefault();
+      e.returnValue = "Warning message...";
+    });
 
     // // Prevent repeat participation in the same browser
     // const localKey = `layout_exp_started_${subject_id}`;
