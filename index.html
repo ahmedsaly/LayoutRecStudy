@@ -1442,13 +1442,12 @@
         TWO: ''   // Disable 2-finger pinch zoom
       };
 
-      container.addEventListener('touchstart', e => e.preventDefault(), { passive: false });
-      container.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
-      container.addEventListener('touchend', e => e.preventDefault(), { passive: false });
-
-      container.addEventListener('gesturestart', e => e.preventDefault(), { passive: false });
-      container.addEventListener('gesturechange', e => e.preventDefault(), { passive: false });
-      container.addEventListener('gestureend', e => e.preventDefault(), { passive: false });
+      ['touchstart', 'touchmove', 'touchend', 'gesturestart', 'gesturechange', 'gestureend'].forEach(evt => {
+        viewer.container.addEventListener(evt, e => {
+          e.preventDefault();
+          e.stopPropagation();
+        }, { passive: false });
+      });
 
 
       tut_progressStartTime = Date.now(); // Reset progress start time for new view
