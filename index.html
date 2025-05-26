@@ -618,14 +618,14 @@
 
     // Get experiment key from URL (1-5)
     const urlParams = new URLSearchParams(window.location.search);
-    const experimentKey = parseInt(urlParams.get('exp'));
-    const subject_id = urlParams.get('id');
+    const experimentKey = parseInt(urlParams.get('exp')) || 1;
+    const subject_id = urlParams.get('id') || 12;
 
     if (!subject_id || !experimentKey) {
-    // Not coming from Prolific – block access
-    // document.write("<h2 style='color:red; text-align:center;'>Access denied. Please access this experiment through Prolific.</h2>");
-    alert("Invalid Access");
-    window.location.href = "/error-page.html";
+      // Not coming from Prolific – block access
+      // document.write("<h2 style='color:red; text-align:center;'>Access denied. Please access this experiment through Prolific.</h2>");
+      alert("Invalid Access");
+      window.location.href = "/error-page.html";
     }
 
     const requiredSections = 4; 
@@ -1621,11 +1621,11 @@
               <div class="layout-options-container">
                 <!-- Layout options will be inserted here dynamically -->
                 <div style="position: relative; margin: 0 1vw;">
-                  <img src="Tutorial_data/option1.4.png" style="width: 40vmin; height: auto; border: 2px solid transparent; cursor: pointer;" alt="Layout A">
+                  <img src="Tutorial_data/Layout_Options/opt1.png" style="width: 40vmin; height: auto; border: 2px solid transparent; cursor: pointer;" alt="Layout A">
                   <div style="position: absolute; bottom: -3vh; left: 50%; transform: translateX(-50%); font-size: calc(14px + 0.2vw); font-weight: bold; color: #333;">A</div>
                 </div>
                 <div style="position: relative; margin: 0 1vw;">
-                  <img src="Tutorial_data/option2.3.png" style="width: 40vmin; height: auto; border: 2px solid transparent; cursor: pointer;" alt="Layout B">
+                  <img src="Tutorial_data/Layout_Options/opt2.png" style="width: 40vmin; height: auto; border: 2px solid transparent; cursor: pointer;" alt="Layout B">
                   <div style="position: absolute; bottom: -3vh; left: 50%; transform: translateX(-50%); font-size: calc(14px + 0.2vw); font-weight: bold; color: #333;">B</div>
                 </div>
               </div>
