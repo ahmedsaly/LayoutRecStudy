@@ -1437,20 +1437,20 @@
       //   TWO: null
       // };
 
-      viewer.OrbitControls.touches = {
-        ONE: '',  // Disable 1-finger touch rotation
-        TWO: ''   // Disable 2-finger pinch zoom
-      };
+      // viewer.OrbitControls.touches = {
+      //   ONE: '',  // Disable 1-finger touch rotation
+      //   TWO: ''   // Disable 2-finger pinch zoom
+      // };
 
       viewer.OrbitControls.enableZoom = false;
       // viewer.OrbitControls.enablePan = false;
 
-      ['touchstart', 'touchmove', 'touchend', 'gesturestart', 'gesturechange', 'gestureend'].forEach(evt => {
-        container.addEventListener(evt, e => {
-          e.preventDefault();
-          e.stopPropagation();
-        }, { passive: false });
-      });
+      // ['touchstart', 'touchmove', 'touchend', 'gesturestart', 'gesturechange', 'gestureend'].forEach(evt => {
+      //   container.addEventListener(evt, e => {
+      //     e.preventDefault();
+      //     e.stopPropagation();
+      //   }, { passive: false });
+      // });
 
 
       tut_progressStartTime = Date.now(); // Reset progress start time for new view
