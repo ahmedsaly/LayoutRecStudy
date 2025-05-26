@@ -2512,6 +2512,14 @@
       });
       viewer.add(pano);
 
+      // Disable touch interaction
+      if (viewer.OrbitControls) {
+        viewer.OrbitControls.touches = {
+          ONE: PANOLENS.TOUCH.NONE,
+          TWO: PANOLENS.TOUCH.NONE
+        };
+      }
+
       // Disable touch input only
       viewer.container.addEventListener('touchstart', (e) => {
         e.preventDefault();
