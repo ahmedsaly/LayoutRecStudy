@@ -1,0 +1,3492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Layout Recognition Study</title>
+
+   <!-- jsPsych and Plugins -->
+  <link rel="stylesheet" href="https://unpkg.com/jspsych@8.2.1/css/jspsych.css" />
+  <script src="https://unpkg.com/jspsych@8.2.1"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response@2.1.0"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-image-keyboard-response@2.1.0"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-preload@2.1.0"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-html-button-response@2.1.0"></script>
+  <!-- <script src="https://unpkg.com/@jspsych-contrib/plugin-pipe@0.4"></script> -->
+  <script src="https://unpkg.com/@jspsych-contrib/plugin-pipe"></script>
+
+  <!-- Three.js & Panolens -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r105/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/panolens@0.12.0/build/panolens.min.js"></script>
+
+  <!-- Experiment Styles -->
+  <style>
+    /* ----------------------
+       Global Variables
+    ---------------------- */
+    :root {
+      --color-primary: #007bff;
+      --color-success: #28a745;
+      --color-error:  #dc3545;
+      --overlay-bg:   rgba(255, 255, 255, 0.9);
+      --text-color: rgba(255, 255, 255, 0.9);
+      --blur-effect: blur(2px);
+    }
+    
+    /* ----------------------
+       Base Styles
+    ---------------------- */
+    body {
+      font-family: sans-serif;
+      overflow: hidden;
+      /* background: black; */
+      height: 100vh;
+      margin: 0;
+    }
+
+    #jspsych-target {
+      flex-direction: column;
+      width: 100vw;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .black-background {
+      background: black !important;
+    }
+
+    /* ----------------------
+       Welcome Screen
+    ---------------------- */
+    .welcome-message {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      font-size: calc(14px + 0.5vw);
+    }
+    
+    .test-message {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      font-size: calc(14px + 0.5vw);
+    }
+    
+    .ptt-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: calc(100vh - 150px);
+    width: 100%;
+    }
+
+    .ptt-canvas-container {
+        position: relative;
+        width: 90%;
+        max-width: 600px;
+        aspect-ratio: 1/1; /* Maintain square aspect ratio */
+        margin: 0 auto;
+    }
+
+    .ptt-canvas {
+        width: 100%;
+        height: 100%;
+        border: 1px solid black;
+        display: block;
+    }
+
+    .ptt-image {
+        max-width: 90%;
+        max-height: 30vh;
+        margin-bottom: 20px;
+    }
+
+    .ptt-instructions {
+        text-align: center;
+        margin-bottom: 20px;
+        max-width: 90%;
+    }
+
+    /* ----------------------
+       Panorama View
+    ---------------------- */
+    #panorama {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: auto;
+      height: auto;
+      max-width: 100%;
+      max-height: 100%;
+      cursor: grab;
+      z-index: 1; 
+    }
+    #panorama:active {
+      cursor: grabbing;
+    }
+
+    /* ----------------------
+       Money Display Section
+    ---------------------- */
+    .money-container {
+      position: absolute;
+      right: 2vw;
+      top: 2vh;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 1000;
+    }
+
+    .money-display {
+      position:static;
+      background-color: rgba(255, 255, 255, 0.1);
+      padding: 1vh 1.5vw;
+      border-radius: 5px;
+      text-align: left;
+      font-size: calc(12px + 0.3vw);
+      backdrop-filter: var(--blur-effect);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .money-item {
+      margin: 0.5vh 0;
+    }
+
+    .money-label {
+      font-weight: normal;
+      color: var(--text-color);
+    }
+
+    .money-value {
+      font-weight: bold;
+      color: var(--color-success);
+    }
+
+    .bonus-value {
+      color: var(--text-color);
+      display: inline-block;
+      position: relative;
+    }
+
+    /* Bonus Animation */
+    @keyframes bonusPop {
+      0% { transform: scale(1); color: var(--text-color); }
+      40%, 60% { transform: scale(1.5); color: var(--color-error); }
+      100% { transform: scale(1); color: var(--text-color); }
+    }
+
+    .bonus-value.animate {
+      animation: bonusPop 1.2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+
+    /* ----------------------
+       Navigation Buttons
+    ---------------------- */
+    .next-view-btn {
+      position: static;
+      padding: 10px 20px;
+      background-color: rgba(255, 255, 255, 0.1);
+      border: none;
+      border-radius: 4px;
+      color: var(--text-color);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      z-index: 1000;
+      backdrop-filter: var(--blur-effect);
+      width: fit-content;
+    }
+
+    .next-view-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .next-view-btn.complete {
+      background-color: rgba(40, 167, 69, 0.2);
+      color: var(--text-color);
+    }
+
+    .next-view-btn.complete:not(:disabled):hover {
+      background-color: rgba(40, 167, 69, 0.3);
+      transform: scale(1.05);
+    }
+
+    #revisitBtn {
+      margin-top: 10px;
+    }
+    
+    /* ----------------------
+      Bottom UI Components
+    ---------------------- */
+
+    /* Hover Trigger - Bottom bar that reveals options panel */
+    .hover-trigger {
+      position: fixed;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 20%;
+      height: 3%;
+      background: rgba(255, 255, 255, 0.2);
+      z-index: 1001;
+      cursor: pointer;
+      border-radius: 4px;
+
+      /* Center contents */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      
+      /* Smooth transitions */
+      /* transition: all 0.2s ease-in-out; */
+    }
+
+    /* Upward-pointing triangle indicator */
+    .hover-trigger::before {
+      content: '';
+      position: absolute;
+      top: 8px;
+
+      /* Triangle shape */
+      width: 0;
+      height: 0;
+      border-left: 8px solid transparent;
+      border-right: 8px solid transparent;
+      border-bottom: 8px solid rgba(255, 255, 255, 0.8);
+    
+      /* transition: all 0.2s ease-in-out; */
+    }
+
+    /* Bottom line indicator */
+    .hover-trigger::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      height: 2px;
+      background: rgba(255, 255, 255, 0.5);
+    }
+
+    /* Hover state */
+    .hover-trigger:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .hover-trigger:hover::before {
+      border-bottom-color: rgba(255, 255, 255, 1);
+      top: 10px;
+    }
+
+    .hover-trigger:hover::after {
+      background: rgba(255, 255, 255, 0.8);
+    }
+
+    /* Hidden state */
+    .hover-trigger.hidden {
+      opacity: 0;
+      pointer-events: none;
+      cursor: default;
+      transition: opacity 0s ease-in-out;
+    }
+
+    /* ----------------------
+      Bottom Panel Section
+    ---------------------- */
+
+    /* Bottom section container */
+    .bottom-section {
+      position: fixed;
+      display: none;
+      bottom: -100%;
+      left: 0;
+      width: 100%;
+      z-index: 1000;
+      
+      /* Styling */
+      background-color: rgba(255, 255, 255, 0.95);
+      padding: 20px 0px 20px 0px;
+      border-radius: 10px 10px 0 0;
+      box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+
+      /* Animation */
+      transition: bottom 0.3s ease-in-out;
+    }
+
+    /* Visible state */
+    .bottom-section.visible {
+      display: block;
+      bottom: 0;
+    }
+
+    .hover-trigger:hover ~ .bottom-section {
+      transition: bottom 0.3s ease-in-out;
+      display: block;
+      bottom: 0;
+    }
+    
+    /* Fixed bottom section after choice confirmation */
+    .bottom-section.fixed {
+      bottom: 0;
+      display: block;
+      transition: none;
+    }
+
+    .bottom-section.fixed ~ .hover-trigger {
+      display: none;
+    }
+
+    /* ----------------------
+       Buttons & Messages
+       ---------------------- */
+
+    /* Button styles */
+    button {
+      display: inline-block;
+      padding: 0.5vh 2vw;
+      /* font-size: calc(12px + 0.3vw); */
+      font-size: clamp(14px, 2vmin, 16px);
+      width: auto;
+      min-width: min-content;
+      margin: 0 auto;
+    }
+    
+    /* Submit button margin */
+    #submitBtn, #confirmBtn, #nextLayoutBtn {
+      margin-bottom: 20px;
+      white-space: nowrap;
+      padding: 0.5vh 2vw;
+    }
+
+    .confirm-btn, #nextLayoutBtn {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .confirm-btn:hover, #nextLayoutBtn:hover {
+      background-color: #218838;
+    }
+
+    .confirm-btn:disabled, #nextLayoutBtn:disabled {
+      background-color: #6c757d;
+      cursor: not-allowed;
+    }
+
+    #submitBtn:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    /* ----------------------
+      Layout Container
+    ---------------------- */
+
+    /* Layout container adjustments */
+    #layout-container {
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    #layout-container p {
+      margin: 1vh 0;
+      font-size: calc(12px + 0.3vw);
+    }
+
+    /* Layout Options Grid */
+    .layout-options-container {
+      display: flex;
+      gap: 1.5vw;
+      justify-content: center;
+      padding: 1vh 0;
+      flex-wrap: nowrap;
+      width: 100%;
+    }
+
+    /* Layout option container */
+    .layout-option {
+      position: relative;
+      margin: 0 1vw;
+    }
+
+    /* Layout Images */
+    .layout-img {
+      cursor: pointer;
+      width: 90%;
+      max-height: 37vh;
+      border: 2px solid transparent;
+    }
+
+    .layout-img:hover { border-color: blue; }
+    .layout-img.selected { border-color: green; }
+    .layout-img.selected:hover {border: 2px solid green;}
+    .layout-img.correct { border: 3px solid var(--color-success) !important; }
+    .layout-img.incorrect { border: 3px solid var(--color-error) !important; }
+
+    /* Layout labels */
+    .layout-label {
+      position: absolute;
+      bottom: -3vh;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: calc(14px + 0.2vw);
+      font-weight: bold;
+      color: #333;
+    }
+    
+    .message-success {
+      background-color: #dff0d8;
+      color: #3c763d;
+      border: 1px solid #d6e9c6;
+    }
+
+    .message-error {
+      background-color: #f2dede;
+      color: #a94442;
+      border: 1px solid #ebccd1;
+    }
+
+    /* Potential bonus message */
+    .potential-bonus-message {
+      padding: 10px;
+      background-color: rgba(0, 123, 255, 0.1);
+      border-radius: 5px;
+      text-align: center;
+      font-size: clamp(12px, 1.8vmin, 14px);
+      color: #007bff;
+      width: 70%;
+      align-self: center;
+      justify-content: center;
+      margin: 2vh auto 0 auto;
+    }
+
+    .bonus-amount {
+      font-weight: bold;
+      font-size: clamp(12px, 1.8vmin, 16px)
+    }
+
+    .feedback-text {
+      text-align: center;
+      font-weight: bold;
+      font-size: clamp(12px, 2vmin, 16px);
+      margin: 1vh 0;
+    }
+
+    .feedback-correct {
+      color: #28a745;
+    }
+
+    .feedback-incorrect {
+      color: #dc3545;
+    }
+
+    /* ----------------------
+       Confidence Scale
+       ---------------------- */
+    /* Confidence scale container */
+    .confidence-container {
+      margin: 0px 0;
+      width: 80%;
+      padding: 10px;
+      border-radius: 8px;
+      margin:auto;
+    }
+
+    /* Shake animation for required field */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-3px); }
+      40%, 80% { transform: translateX(3px); }
+    }
+
+    .confidence-container.shake {
+      animation: shake 0.8s ease-in-out;
+      border: 2px solid #dc3545;  /* Red border during shake */
+    }
+
+    .confidence-options {
+      display: flex;
+      justify-content: center;
+      /* flex-wrap: nowrap; */
+      gap: 1vw;
+      align-items: center;
+      padding: 0 1vw;
+    }
+
+    .confidence-option {
+      flex: 1;
+      min-width: max-content; /* Prevent text truncation */
+      display: flex;
+      align-items: center;
+      /* gap: 8px; */
+      cursor: pointer;
+      border-radius: 4px;
+      transition: all 0.2s ease;
+    }
+
+    .confidence-option:hover {
+      background-color: rgba(0, 123, 255, 0.1);
+    }
+
+    .confidence-option.selected {
+      background-color: rgba(0, 123, 255, 0.2);
+    }
+
+    .check-circle {
+      width: 20px;
+      height: 20px;
+      border: 2px solid #007bff;
+      border-radius: 50%;
+      position: relative;
+      transition: all 0.2s ease;
+    }
+
+    .confidence-option.selected .check-circle {
+      background-color: #007bff;
+    }
+
+    .confidence-option.selected .check-circle::after {
+      content: '✓';
+      position: absolute;
+      color: white;
+      font-size: clamp(9px, 1.5vmin, 14px);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .option-text {
+      /* font-size: 14px; */
+      font-size: clamp(10px, 1.5vmin, 14px); /* Responsive text */
+      color: #333;
+      /* white-space: nowrap; */
+    }
+
+  </style>
+</head>
+<body>
+  <div id="jspsych-target"></div>
+
+  <script>
+    let viewIndex = 0;
+    let tut_viewIndex = 0;
+    let currentViewedAngles = new Set();
+    let tut_currentViewedAngles = new Set();
+    let viewCost = 0.30;
+    let tut_viewCost = 0.30;
+    let baseMoney = 1.00;
+    let tut_baseMoney = 1.00;
+    let maxBonus = 4.00;
+    let tut_maxBonus = 4.00;
+    let tut_viewsTaken = 0;
+    let viewStartTime = 0;
+    let tut_viewStartTime = 0;
+    let viewDurations = [];
+    let tut_viewDurations = [];
+    let layoutData = [];
+    let PTT_data = [];
+    let tutorialLayoutData = [];
+    let layoutStartTime = 0;
+    let tut_layoutStartTime = 0;
+    let progressStartTime = 0; // Add this to track when each view starts
+    let tut_progressStartTime = 0; // Add this to track when each view starts
+    let progressCompletionTimes = [];
+    let tut_progressCompletionTimes = []; // Add this to store completion times for each view
+    let logData = [];
+    let currentArea = null;
+    let areaStartTime = null;
+    let currentActionDetails = [];
+    let isTransitioningLayout = false;
+    let hasRevisited = false;
+    let isRevisitPhase = false;
+    let viewsForBonus = 0;  // Tracks views that deduct from bonus
+    let totalViewsViewed = 1; // Tracks all views (including revisits)
+
+    // Get experiment key from URL (1-5)
+    const urlParams = new URLSearchParams(window.location.search);
+    const experimentKey = parseInt(urlParams.get('exp')) || 1;
+    const subject_id = urlParams.get('id') || "123";
+
+    const requiredSections = 4; 
+    const getTimestamp = () => new Date().toISOString();
+
+    // Create a single function to handle the display message
+    const savingDisplay = () => {
+      requestAnimationFrame(() => {
+        const displayElement = jsPsych.getDisplayElement();
+        if (displayElement) {
+          displayElement.innerHTML = `
+            <div style="
+              display: flex;
+              flex-direction: column;
+              justify-content: center;
+              align-items: center;
+              height: 100vh;
+              font-family: Arial, sans-serif;
+              text-align: center;
+              padding: 20px;
+            ">
+              <div class="spinner" style="
+                border: 8px solid #f3f3f3;
+                border-top: 8px solid #3498db;
+                border-radius: 50%;
+                width: 60px;
+                height: 60px;
+                animation: spin 1s linear infinite;
+                margin-bottom: 30px;
+              "></div>
+              <p style="font-size: 20px; max-width: 600px;">
+                Please wait... Your data is being saved.<br><br>
+                <strong>Do not close or refresh this page.</strong><br><br>
+                Interrupting this process will result in loss of your data and <strong>you will not be paid.</strong>
+              </p>
+            </div>
+            <style>
+              @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+              }
+            </style>
+          `;
+        }
+      });
+    };
+
+    // Create a function to create save trials with the same display
+    const saveData = (filename, dataFunction) => ({
+      type: jsPsychPipe,
+      action: "save",
+      experiment_id: "WtGzR3nDrRcE",
+      filename: filename,
+      show_default_message: false,
+      stimulus: `
+        <div style="text-align: center; font-size: 24px; margin-top: 40vh;">
+          Don't close this window. We're saving your data, otherwise you won't get paid.
+        </div>
+      `,
+      data_string: dataFunction,
+      on_start: savingDisplay
+    });
+
+    /* initialize jsPsych */
+    var jsPsych = initJsPsych({
+      // on_finish: function() {
+      //   // jsPsych.data.displayData();
+      // },
+      on_data_update: function(data) {
+        data.subject_id = subject_id;  // Add subject ID to all trials
+        if (!data.end_time) {
+          data.end_time = new Date().toISOString();
+        }
+      }
+    });
+
+    const layoutConfigs = [
+      {
+        name: "B10108",
+        options: ["panorama/B_10108/Layout_Options/opt1.png", "panorama/B_10108/Layout_Options/correct.png", "panorama/B_10108/Layout_Options/opt2.png", "panorama/B_10108/Layout_Options/opt3.png"],
+        correctAnswer: "B",
+        maxBonus: 4.00,
+        conditions: {
+          1: ["panorama/B_10108/B_10108_minOverlap/B_10108_minOverlap_2.png", "panorama/B_10108/B_10108_minOverlap/B_10108_minOverlap_1.png", "panorama/B_10108/B_10108_minOverlap/B_10108_minOverlap_3.png", "panorama/B_10108/B_10108_minOverlap/B_10108_minOverlap_4.png"],
+          2: ["panorama/B_10108/B_10108_maxOverlap_NoLandmarks/B_10108_maxOverlap_1.png", "panorama/B_10108/B_10108_maxOverlap_NoLandmarks/B_10108_maxOverlap_3.png", "panorama/B_10108/B_10108_maxOverlap_NoLandmarks/B_10108_maxOverlap_2.png", "panorama/B_10108/B_10108_maxOverlap_NoLandmarks/B_10108_maxOverlap_4.png"],
+          3: ["panorama/B_10108/B_10108_maxOverlap_NoLandmarks/B_10108_maxOverlap_4.png", "panorama/B_10108/B_10108_maxOverlap_NoLandmarks/B_10108_maxOverlap_1.png", "panorama/B_10108/B_10108_maxOverlap_NoLandmarks/B_10108_maxOverlap_2.png", "panorama/B_10108/B_10108_maxOverlap_NoLandmarks/B_10108_maxOverlap_3.png"],
+          4: ["panorama/B_10108/B_10108_maxOverlap_Landmarks/B_10108_maxOverlap_LM_1.png", "panorama/B_10108/B_10108_maxOverlap_Landmarks/B_10108_maxOverlap_LM_3.png", "panorama/B_10108/B_10108_maxOverlap_Landmarks/B_10108_maxOverlap_LM_2.png", "panorama/B_10108/B_10108_maxOverlap_Landmarks/B_10108_maxOverlap_LM_4.png"],
+          5: ["panorama/B_10108/B_10108_maxOverlap_Landmarks/B_10108_maxOverlap_LM_4.png", "panorama/B_10108/B_10108_maxOverlap_Landmarks/B_10108_maxOverlap_LM_1.png", "panorama/B_10108/B_10108_maxOverlap_Landmarks/B_10108_maxOverlap_LM_2.png", "panorama/B_10108/B_10108_maxOverlap_Landmarks/B_10108_maxOverlap_LM_3.png"]
+        }
+      },
+      {
+        name: "B10028",
+        options: ["panorama/B_10028/Layout_Options/opt1.png", "panorama/B_10028/Layout_Options/correct.png", "panorama/B_10028/Layout_Options/opt2.png", "panorama/B_10028/Layout_Options/opt4.png"],
+        correctAnswer: "B",
+        maxBonus: 4.00,
+        conditions: {
+          1: ["panorama/B_10028/B_10028_minOverlap/B_10028_minOverlap_2.png", "panorama/B_10028/B_10028_minOverlap/B_10028_minOverlap_5.png", "panorama/B_10028/B_10028_minOverlap/B_10028_minOverlap_4.png", "panorama/B_10028/B_10028_minOverlap/B_10028_minOverlap_6.png", "panorama/B_10028/B_10028_minOverlap/B_10028_minOverlap_1.png", "panorama/B_10028/B_10028_minOverlap/B_10028_minOverlap_3.png"],
+          2: ["panorama/B_10028/B_10028_maxOverlap_NoLandmarks/B_10028_maxOverlap_6.png", "panorama/B_10028/B_10028_maxOverlap_NoLandmarks/B_10028_maxOverlap_3.png", "panorama/B_10028/B_10028_maxOverlap_NoLandmarks/B_10028_maxOverlap_5.png", "panorama/B_10028/B_10028_maxOverlap_NoLandmarks/B_10028_maxOverlap_2.png", "panorama/B_10028/B_10028_maxOverlap_NoLandmarks/B_10028_maxOverlap_4.png", "panorama/B_10028/B_10028_maxOverlap_NoLandmarks/B_10028_maxOverlap_1.png"],
+          3: ["panorama/B_10108/B_10028_maxOverlap_NoLandmarks/B_10028_maxOverlap_1.png", "panorama/B_10028/B_10028_maxOverlap_NoLandmarks/B_10028_maxOverlap_2.png", "panorama/B_10028/B_10028_maxOverlap_NoLandmarks/B_10028_maxOverlap_3.png", "panorama/B_10028/B_10028_maxOverlap_NoLandmarks/B_10028_maxOverlap_4.png", "panorama/B_10028/B_10028_maxOverlap_NoLandmarks/B_10028_maxOverlap_5.png", "panorama/B_10028/B_10028_maxOverlap_NoLandmarks/B_10028_maxOverlap_6.png"],
+          4: ["panorama/B_10028/B_10028_maxOverlap_Landmarks/B_10028_maxOverlap_LM_6.png", "panorama/B_10028/B_10028_maxOverlap_Landmarks/B_10028_maxOverlap_LM_3.png", "panorama/B_10028/B_10028_maxOverlap_Landmarks/B_10028_maxOverlap_LM_5.png", "panorama/B_10028/B_10028_maxOverlap_Landmarks/B_10028_maxOverlap_LM_2.png", "panorama/B_10028/B_10028_maxOverlap_Landmarks/B_10028_maxOverlap_LM_4.png", "panorama/B_10028/B_10028_maxOverlap_Landmarks/B_10028_maxOverlap_LM_1.png"],
+          5: ["panorama/B_10028/B_10028_maxOverlap_Landmarks/B_10028_maxOverlap_LM_1.png", "panorama/B_10028/B_10028_maxOverlap_Landmarks/B_10028_maxOverlap_LM_2.png", "panorama/B_10028/B_10028_maxOverlap_Landmarks/B_10028_maxOverlap_LM_3.png", "panorama/B_10028/B_10028_maxOverlap_Landmarks/B_10028_maxOverlap_LM_4.png", "panorama/B_10028/B_10028_maxOverlap_Landmarks/B_10028_maxOverlap_LM_5.png", "panorama/B_10028/B_10028_maxOverlap_Landmarks/B_10028_maxOverlap_LM_6.png"]
+        }
+      },
+      {
+        name: "B10023",
+        options: ["panorama/B_10023/Layout_Options/opt1.png", "panorama/B_10023/Layout_Options/correct.png", "panorama/B_10023/Layout_Options/opt2.png", "panorama/B_10023/Layout_Options/opt3.png"],
+        correctAnswer: "B",
+        maxBonus: 4.00,
+        conditions: {
+          1: ["panorama/B_10023/B_10023_minOverlap/B_10023_minOverlap_5.png", "panorama/B_10023/B_10023_minOverlap/B_10023_minOverlap_2.png", "panorama/B_10023/B_10023_minOverlap/B_10023_minOverlap_4.png", "panorama/B_10023/B_10023_minOverlap/B_10023_minOverlap_1.png", "panorama/B_10023/B_10023_minOverlap/B_10023_minOverlap_3.png"],
+          2: ["panorama/B_10023/B_10023_maxOverlap_NoLandmarks/B_10023_maxOverlap_3.png", "panorama/B_10023/B_10023_maxOverlap_NoLandmarks/B_10023_maxOverlap_1.png", "panorama/B_10023/B_10023_maxOverlap_NoLandmarks/B_10023_maxOverlap_4.png", "panorama/B_10023/B_10023_maxOverlap_NoLandmarks/B_10023_maxOverlap_2.png", "panorama/B_10023/B_10023_maxOverlap_NoLandmarks/B_10023_maxOverlap_5.png"],
+          3: ["panorama/B_10023/B_10023_maxOverlap_NoLandmarks/B_10023_maxOverlap_1.png", "panorama/B_10023/B_10023_maxOverlap_NoLandmarks/B_10023_maxOverlap_2.png", "panorama/B_10023/B_10023_maxOverlap_NoLandmarks/B_10023_maxOverlap_3.png", "panorama/B_10023/B_10023_maxOverlap_NoLandmarks/B_10023_maxOverlap_4.png", "panorama/B_10023/B_10023_maxOverlap_NoLandmarks/B_10023_maxOverlap_5.png"],
+          4: ["panorama/B_10023/B_10023_maxOverlap_Landmarks/B_10023_maxOverlap_LM_3.png", "panorama/B_10023/B_10023_maxOverlap_Landmarks/B_10023_maxOverlap_LM_1.png", "panorama/B_10023/B_10023_maxOverlap_Landmarks/B_10023_maxOverlap_LM_4.png", "panorama/B_10023/B_10023_maxOverlap_Landmarks/B_10023_maxOverlap_LM_2.png", "panorama/B_10023/B_10023_maxOverlap_Landmarks/B_10023_maxOverlap_LM_5.png"],
+          5: ["panorama/B_10023/B_10023_maxOverlap_Landmarks/B_10023_maxOverlap_LM_1.png", "panorama/B_10023/B_10023_maxOverlap_Landmarks/B_10023_maxOverlap_LM_2.png", "panorama/B_10023/B_10023_maxOverlap_Landmarks/B_10023_maxOverlap_LM_3.png", "panorama/B_10023/B_10023_maxOverlap_Landmarks/B_10023_maxOverlap_LM_4.png", "panorama/B_10023/B_10023_maxOverlap_Landmarks/B_10023_maxOverlap_LM_5.png"]
+        }
+      },
+      {
+        name: "B10020",
+        options: ["panorama/B_10020/Layout_Options/correct.png", "panorama/B_10020/Layout_Options/opt1.png", "panorama/B_10020/Layout_Options/opt2.png", "panorama/B_10020/Layout_Options/opt3.png"],
+        correctAnswer: "A",
+        maxBonus: 4.00,
+        conditions: {
+          1: ["panorama/B_10020/B_10020_minOverlap/B_10020_minOverlap_3.png", "panorama/B_10020/B_10020_minOverlap/B_10020_minOverlap_1.png", "panorama/B_10020/B_10020_minOverlap/B_10020_minOverlap_4.png", "panorama/B_10020/B_10020_minOverlap/B_10020_minOverlap_2.png"],
+          2: ["panorama/B_10020/B_10020_maxOverlap_NoLandmarks/B_10020_maxOverlap_3.png", "panorama/B_10020/B_10020_maxOverlap_NoLandmarks/B_10020_maxOverlap_1.png", "panorama/B_10020/B_10020_maxOverlap_NoLandmarks/B_10020_maxOverlap_4.png", "panorama/B_10020/B_10020_maxOverlap_NoLandmarks/B_10020_maxOverlap_2.png"],
+          3: ["panorama/B_10020/B_10020_maxOverlap_NoLandmarks/B_10020_maxOverlap_1.png", "panorama/B_10020/B_10020_maxOverlap_NoLandmarks/B_10020_maxOverlap_2.png", "panorama/B_10020/B_10020_maxOverlap_NoLandmarks/B_10020_maxOverlap_4.png", "panorama/B_10020/B_10020_maxOverlap_NoLandmarks/B_10020_maxOverlap_3.png"],
+          4: ["panorama/B_10020/B_10020_maxOverlap_Landmarks/B_10020_maxOverlap_LM_3.png", "panorama/B_10020/B_10020_maxOverlap_Landmarks/B_10020_maxOverlap_LM_1.png", "panorama/B_10020/B_10020_maxOverlap_Landmarks/B_10020_maxOverlap_LM_4.png", "panorama/B_10020/B_10020_maxOverlap_Landmarks/B_10020_maxOverlap_LM_2.png"],
+          5: ["panorama/B_10020/B_10020_maxOverlap_Landmarks/B_10020_maxOverlap_LM_1.png", "panorama/B_10020/B_10020_maxOverlap_Landmarks/B_10020_maxOverlap_LM_2.png", "panorama/B_10020/B_10020_maxOverlap_Landmarks/B_10020_maxOverlap_LM_4.png", "panorama/B_10020/B_10020_maxOverlap_Landmarks/B_10020_maxOverlap_LM_3.png"]
+        }
+      },
+      {
+        name: "B10103",
+        options: ["panorama/B_10103/Layout_Options/correct.png", "panorama/B_10103/Layout_Options/opt1.png", "panorama/B_10103/Layout_Options/opt2.png", "panorama/B_10103/Layout_Options/opt3.png"],
+        correctAnswer: "A",
+        maxBonus: 4.00,
+        conditions: {
+          1: ["panorama/B_10103/B_10103_minOverlap/B_10103_minOverlap_3.png", "panorama/B_10103/B_10103_minOverlap/B_10103_minOverlap_6.png", "panorama/B_10103/B_10103_minOverlap/B_10103_minOverlap_5.png", "panorama/B_10103/B_10103_minOverlap/B_10103_minOverlap_2.png", "panorama/B_10103/B_10103_minOverlap/B_10103_minOverlap_1.png", "panorama/B_10103/B_10103_minOverlap/B_10103_minOverlap_4.png"],
+          2: ["panorama/B_10103/B_10103_maxOverlap_NoLandmarks/B_10103_maxOverlap_2.png", "panorama/B_10103/B_10103_maxOverlap_NoLandmarks/B_10103_maxOverlap_4.png", "panorama/B_10103/B_10103_maxOverlap_NoLandmarks/B_10103_maxOverlap_5.png", "panorama/B_10103/B_10103_maxOverlap_NoLandmarks/B_10103_maxOverlap_1.png", "panorama/B_10103/B_10103_maxOverlap_NoLandmarks/B_10103_maxOverlap_6.png", "panorama/B_10103/B_10103_maxOverlap_NoLandmarks/B_10103_maxOverlap_3.png"],
+          3: ["panorama/B_10103/B_10103_maxOverlap_NoLandmarks/B_10103_maxOverlap_1.png", "panorama/B_10103/B_10103_maxOverlap_NoLandmarks/B_10103_maxOverlap_2.png", "panorama/B_10103/B_10103_maxOverlap_NoLandmarks/B_10103_maxOverlap_3.png", "panorama/B_10103/B_10103_maxOverlap_NoLandmarks/B_10103_maxOverlap_4.png", "panorama/B_10103/B_10103_maxOverlap_NoLandmarks/B_10103_maxOverlap_5.png", "panorama/B_10103/B_10103_maxOverlap_NoLandmarks/B_10103_maxOverlap_6.png"],
+          4: ["panorama/B_10103/B_10103_maxOverlap_Landmarks/B_10103_maxOverlap_LM_2.png", "panorama/B_10103/B_10103_maxOverlap_Landmarks/B_10103_maxOverlap_LM_4.png", "panorama/B_10103/B_10103_maxOverlap_Landmarks/B_10103_maxOverlap_LM_5.png", "panorama/B_10103/B_10103_maxOverlap_Landmarks/B_10103_maxOverlap_LM_1.png", "panorama/B_10103/B_10103_maxOverlap_Landmarks/B_10103_maxOverlap_LM_6.png", "panorama/B_10103/B_10103_maxOverlap_Landmarks/B_10103_maxOverlap_LM_3.png"],
+          5: ["panorama/B_10103/B_10103_maxOverlap_Landmarks/B_10103_maxOverlap_LM_1.png", "panorama/B_10103/B_10103_maxOverlap_Landmarks/B_10103_maxOverlap_LM_2.png", "panorama/B_10103/B_10103_maxOverlap_Landmarks/B_10103_maxOverlap_LM_3.png", "panorama/B_10103/B_10103_maxOverlap_Landmarks/B_10103_maxOverlap_LM_4.png", "panorama/B_10103/B_10103_maxOverlap_Landmarks/B_10103_maxOverlap_LM_5.png", "panorama/B_10103/B_10103_maxOverlap_Landmarks/B_10103_maxOverlap_LM_6.png"]
+        }
+      }
+    ];
+
+    // Seeded random permutations for 5 experiments
+    const conditionPermutations = {
+      1: [2,4,1,3,5],  // exp=1: Layout1=cond2, Layout2=cond4, etc.
+      2: [5,1,3,2,4],
+      3: [3,5,4,1,2],
+      4: [1,2,5,4,3],
+      5: [4,3,2,5,1]
+    };
+
+    // // Validate experiment key
+    // const validKey = Math.min(Math.max(experimentKey, 1), 5);
+    // const permutation = conditionPermutations[validKey];
+
+    const permutation = conditionPermutations[experimentKey];
+
+    const original_layouts = layoutConfigs.map((layout, originalIndex) => {
+        // Get original correct index from letter (A=0, B=1 etc)
+        const originalCorrectIdx = layout.correctAnswer.charCodeAt(0) - 65;
+        
+        // Create copy of options array and shuffle it
+        const optionsCopy = [...layout.options];
+        const shuffledOptions = jsPsych.randomization.shuffle(optionsCopy);
+        
+        // Find new position of the original correct image
+        const originalCorrectImage = layout.options[originalCorrectIdx];
+        const newCorrectIdx = shuffledOptions.indexOf(originalCorrectImage);
+        const newCorrectAnswer = String.fromCharCode(65 + newCorrectIdx);
+
+        return {
+            originalIndex: originalIndex,
+            name: layout.name,
+            conditionIndex: permutation[originalIndex],
+            options: shuffledOptions, // Use shuffled options
+            correctAnswer: newCorrectAnswer, // Updated correct answer
+            maxBonus: layout.maxBonus,
+            panoramas: layout.conditions[permutation[originalIndex]]
+        };
+    });
+
+    let layouts = jsPsych.randomization.shuffle(original_layouts);
+
+    // Ensure first layout isn't condition 1
+    if (layouts[0].conditionIndex === 1) {
+      const nonCondition1Index = layouts.findIndex(l => l.conditionIndex !== 1);
+      if (nonCondition1Index > -1) {
+        // Swap positions if found
+        [layouts[0], layouts[nonCondition1Index]] = 
+          [layouts[nonCondition1Index], layouts[0]];
+      }
+    }
+
+    const test_layout = [
+      {
+        tut_panoramas: ["Tutorial_data/tut1.png", "Tutorial_data/tut2.png"],
+        tut_options: ["Tutorial_data/Layout_Options/opt1.png", "Tutorial_data/Layout_Options/opt2.png"],
+        tut_correctAnswer: "A",
+        tut_maxBonus: 4.00
+      }
+    ];
+
+    // Generate a unique subject ID and filename (add this right after jsPsych initialization)
+    // const subject_id = jsPsych.randomization.randomID(10);
+    const filename = `${subject_id}.csv`;
+
+    /* create timeline */
+    var timeline = [];
+
+    // Collect all unique image paths from layouts and test_layout
+    const allImages = new Set();
+    
+    // Add images from layouts
+    layouts.forEach(layout => {
+      layout.panoramas.forEach(panorama => allImages.add(panorama));
+      layout.options.forEach(option => allImages.add(option));
+    });
+    
+    // Add images from test_layout
+    test_layout.forEach(layout => {
+      layout.tut_panoramas.forEach(panorama => allImages.add(panorama));
+      layout.tut_options.forEach(option => allImages.add(option));
+    });
+
+    // Create preload trial
+    const preload = {
+      type: jsPsychPreload,
+      images: Array.from(allImages),
+      message: 'Please wait, loading experiment materials...',
+      show_progress_bar: true,
+      continue_after_error: true
+    };
+    
+    timeline.push(preload);
+
+    /* define welcome message trial */
+    var welcome = {
+      type: jsPsychHtmlKeyboardResponse,
+      stimulus: `
+        <div class="welcome-message">
+            Welcome! Thank you for participating in this study.<br><br>
+            Press any key to begin.
+        </div>
+        `,
+      data: {
+        name: "Welcome message"
+      }
+    };
+    timeline.push(welcome);
+
+    // Add new comprehensive instruction message
+    var experiment_instructions = {
+      type: jsPsychHtmlKeyboardResponse,
+      stimulus: `
+        <div class="welcome-message">
+          <h2>Experiment Overview</h2>
+          <p>This study consists of two main parts:</p>
+          
+          <h3>Part 1: Perspective Taking Test</h3>
+          <p>In this part, you will be shown one scene with different objects in it. 
+          Your task is to imagine yourself standing at one location, facing another object, 
+          and pointing to a third object. You will need to indicate the correct direction 
+          by clicking on a circle.</p>
+          
+          <h3>Part 2: Layout Recognition</h3>
+          <p>In this part, you will view several 360° panoramic images, each representing a different location within a building.  
+          You will explore 5 buildings layouts during the experiment.
+          You can explore each 360° view by clicking and dragging with your mouse or using the arrow keys.
+          After viewing the scenes, you will need to select the correct layout that 
+          matches what you've seen.</p>
+          
+          <p>You will first complete a tutorial to learn how the experiment works, 
+          followed by the actual tasks.</p>
+          
+          <p>Press any key to continue.</p>
+        </div>
+      `,
+      data: {
+        name: "Experiment Instructions"
+      }
+    };
+    timeline.push(experiment_instructions);
+
+    // Instructions
+    var PTT_instruction = {
+        type: jsPsychHtmlKeyboardResponse,
+        stimulus: `
+            <div class="test-message">
+            <h2>1. Perspective Taking Test</h2>
+            <p>This is a test of your ability to imagine different perspectives or orientations in space.</p>
+            <p>First you'll see an example, then you'll complete the actual tasks.</p>
+            <p>Press any key to continue.</p>
+            </div>
+        `,
+        data: {
+          name: "PTT Instructions"
+        }
+    };
+    timeline.push(PTT_instruction );
+
+    // Define the task parameters
+    const TASK_ITEMS = [
+        {standing_at: "flower", facing_to: "tree", pointing_to: "cat", correct_angle: 301},
+        {standing_at: "car", facing_to: "traffic light", pointing_to: "stop sign", correct_angle: 123},
+        {standing_at: "cat", facing_to: "tree", pointing_to: "car", correct_angle: 237},
+        {standing_at: "stop sign", facing_to: "cat", pointing_to: "house", correct_angle: 83},
+        {standing_at: "cat", facing_to: "flower", pointing_to: "car", correct_angle: 156},
+        {standing_at: "stop sign", facing_to: "tree", pointing_to: "traffic light", correct_angle: 319},
+        {standing_at: "stop sign", facing_to: "flower", pointing_to: "car", correct_angle: 235},
+    ];
+
+    const PTT_example = {
+      type: jsPsychHtmlButtonResponse,
+      data: {
+        name: "PTT Example"
+      },
+      stimulus: function() {
+        const task = TASK_ITEMS[0];
+        return `
+          <div style="height: 100vh; width: 100vw; display: flex; flex-direction: column; padding: 0; align-items: center; justify-content: center">
+            <!-- Main content container -->
+              <img src="object_array.png" alt="Object Array" style="margin: 20px 0px 0px 0px; height: 38vh;">
+              <div style="height: 45vh; width: 45vh; aspect-ratio: 1/1;">
+                <canvas id="example-canvas" style="width: 100%; height: 100%; border: 1px solid black;"></canvas>
+                <div id="hover-message" style="position: absolute; 
+                  right: calc(((100vw - 45vh)/2) + 45vh);
+                  top: 55vh;
+                  background-color: rgba(255, 255, 255, 0.9); 
+                  color: #333; 
+                  padding: 15px 20px; 
+                  border-radius: 6px; 
+                  text-align: center; 
+                  font-size: clamp(12px, 2vmin, 18px); 
+                  pointer-events: none;
+                  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);">
+                  Notice here that the <span style="color: #FFA500;">orange line</span> indicates <br>the correct pointing direction to the cat.
+                  <div style="position: absolute; 
+                    right: -10px; 
+                    top: 50%; 
+                    transform: translateY(-50%);
+                    width: 0;
+                    height: 0;
+                    border-top: 10px solid transparent;
+                    border-bottom: 10px solid transparent;
+                    border-left: 10px solid rgba(255, 255, 255, 0.9);">
+                  </div>
+                </div>
+              </div>
+              <p style="margin:0; text-align: center;">Example</p>
+              <p style="margin:0; text-align: center;">
+                Imagine you are standing at the <strong>${task.standing_at}</strong>, facing the <strong>${task.facing_to}</strong>, and pointing to the <strong style="color: #FFA500;">${task.pointing_to}</strong>.
+              </p>
+              <div style="display: flex; justify-content: center; margin: 0;">
+                <button id="continue-btn" class="jspsych-btn" style="font-size: clamp(12px, 3vmin, 16px); padding: 5px 20px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 4px;">
+                  Continue
+                </button>
+              </div>
+          </div>
+        `;
+      },
+      choices: [],
+      on_load: function() {
+        // Canvas setup
+        const canvas = document.getElementById('example-canvas');
+        const container = canvas.parentElement;
+        
+        // Set canvas size to match display
+        function resizeCanvas() {
+          const size = Math.min(container.offsetWidth, container.offsetHeight);
+          canvas.width = size;
+          canvas.height = size;
+          drawCircle(canvas.getContext('2d'), TASK_ITEMS[0], TASK_ITEMS[0].correct_angle);
+        }
+        
+        resizeCanvas();
+        
+        // Add click handler for the custom button
+        document.getElementById('continue-btn').addEventListener('click', function() {
+          jsPsych.finishTrial();
+        });
+      }
+    };
+    timeline.push(PTT_example);
+
+    const PTT = {
+      type: jsPsychHtmlButtonResponse,
+      data: {
+        name: "PTT"
+      },
+      stimulus: function() {
+        // Get current task based on internal counter
+        var currentTaskIndex = 1;
+        var task = TASK_ITEMS[currentTaskIndex];
+
+        return `
+          <div style="height: 100vh; width: 100vw; display: flex; flex-direction: column; margin: 0; padding: 0; align-items: center; justify-content: center">
+            <img src="object_array.png" alt="Object Array" style="margin: 20px 0px 0px 0px; height: 38vh">
+            <div style="height: 45vh; width: 45vh; aspect-ratio: 1/1;">
+              <canvas id="task-canvas-${currentTaskIndex}" style="width: 100%; height: 100%; border: 1px solid black;"></canvas>
+              ${true ? `
+                <div id="hover-message" style="position: absolute; 
+                  right: calc(((100vw - 45vh)/2) + 45vh);
+                  top: 55vh;
+                  background-color: rgba(255, 255, 255, 0.9); 
+                  color: #333; 
+                  padding: 15px 20px; 
+                  border-radius: 6px; 
+                  text-align: center; 
+                  font-size: clamp(12px, 2vmin, 18px); 
+                  pointer-events: none;
+                  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+                  opacity: ${currentTaskIndex === 1 ? '1' : '0'};">
+                  Click on the circle <br>to indicate the direction to the target object
+                  <div style="position: absolute; 
+                    right: -10px; 
+                    top: 50%; 
+                    transform: translateY(-50%);
+                    width: 0;
+                    height: 0;
+                    border-top: 10px solid transparent;
+                    border-bottom: 10px solid transparent;
+                    border-left: 10px solid rgba(255, 255, 255, 0.9);">
+                  </div>
+                </div>
+              ` : ''}
+            </div>
+            <p style="margin:0; text-align: center;">${currentTaskIndex}/${TASK_ITEMS.length - 1}</p>
+            <p style="margin:0; text-align: center;">Imagine you are standing at the <strong>${task.standing_at}</strong>, facing the <strong>${task.facing_to}</strong>, and pointing to the <strong style="color: #FFA500;">${task.pointing_to}</strong>.</p>
+
+            <!-- Custom button container -->
+            <div style="display: flex; justify-content: center; margin: 0;">
+              <button id="submit-btn" class="jspsych-btn" style="font-size: clamp(12px, 3vmin, 16px); padding: 5px 20px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 4px;">
+                ${currentTaskIndex === TASK_ITEMS.length - 1 ? 'Submit' : 'Next'}
+              </button>
+            </div>
+          </div>
+        `;
+      },
+      choices: [],
+      on_load: function() {
+        var currentTaskIndex = 1;
+        var task = TASK_ITEMS[currentTaskIndex];
+        let taskStartTime = Date.now();
+
+        const canvas = document.getElementById(`task-canvas-${currentTaskIndex}`);
+        const ctx = canvas.getContext('2d');
+        let loggedAngle = null;
+        
+
+        const container = canvas.parentElement;
+        
+        // Set canvas size to match display
+        function resizeCanvas() {
+          const size = Math.min(container.offsetWidth, container.offsetHeight);
+          canvas.width = size;
+          canvas.height = size;
+          // Initial draw without angle
+          drawCircle(ctx, task);
+        }
+        
+        resizeCanvas();
+
+        // Add mouse interaction
+        canvas.addEventListener('mousedown', function(e) {
+          const rect = canvas.getBoundingClientRect();
+          // Calculate the scale factor between display size and internal size
+          const scaleX = canvas.width / rect.width;
+          const scaleY = canvas.height / rect.height;
+
+          // Adjust coordinates by the scale factor
+          const x = (e.clientX - rect.left) * scaleX - canvas.width / 2;
+          const y = (e.clientY - rect.top) * scaleY - canvas.height / 2;
+
+          loggedAngle = (Math.atan2(y, x) * 180) / Math.PI;
+          loggedAngle = (loggedAngle + 360) % 360;
+          loggedAngle = (loggedAngle + 90) % 360;
+          
+          drawCircle(ctx, task, loggedAngle);
+            
+          // Hide hover message after first click
+
+          const hoverMessage = document.getElementById('hover-message');
+          hoverMessage.style.opacity = '0';
+        });
+
+        // Add click handler for the custom submit button
+        document.getElementById('submit-btn').addEventListener('click', function() {
+          if (loggedAngle !== null) {
+            const taskDuration = (Date.now() - taskStartTime);
+            // const taskDuration = (Date.now() - taskStartTime) / 1000;
+
+            PTT_data.push({
+              participant_id: subject_id,
+              task_id: currentTaskIndex,
+              standing_at: task.standing_at,
+              facing_to: task.facing_to,
+              pointing_to: task.pointing_to,
+              correct_angle: task.correct_angle,
+              logged_angle: loggedAngle,
+              error: calculateError(loggedAngle, task.correct_angle),
+              task_start_time: new Date(taskStartTime).toISOString(),
+              task_duration: taskDuration,
+            });
+            // Move to next task or finish
+            if (currentTaskIndex < TASK_ITEMS.length - 1) {
+              currentTaskIndex++;
+              task = TASK_ITEMS[currentTaskIndex];
+              taskStartTime = Date.now();
+          
+              // Update the canvas and task information
+              const canvas = document.getElementById(`task-canvas-${currentTaskIndex-1}`);
+              canvas.id = `task-canvas-${currentTaskIndex}`;
+              const ctx = canvas.getContext('2d');
+              
+              // Update the task information display
+              document.querySelector('p:nth-of-type(1)').textContent = `${currentTaskIndex}/${TASK_ITEMS.length - 1}`;
+              document.querySelector('p:nth-of-type(2)').innerHTML = `Imagine you are standing at the <strong>${task.standing_at}</strong>, facing the <strong>${task.facing_to}</strong>, and pointing to the <strong style="color: #FFA500;">${task.pointing_to}</strong>.`;
+              
+              // Update the submit button text
+              document.getElementById('submit-btn').textContent = currentTaskIndex === TASK_ITEMS.length - 1 ? 'Submit' : 'Next';
+              
+              // Reset the canvas and logged angle
+              loggedAngle = null;
+              resizeCanvas();
+            } else {
+              jsPsych.finishTrial();
+            }
+          } 
+          else {
+            const hoverMessage = document.getElementById('hover-message');
+            hoverMessage.style.opacity = '1';
+            hoverMessage.style.animation = 'none';
+            hoverMessage.offsetHeight; // Trigger reflow
+            hoverMessage.style.animation = 'shake 0.5s ease-in-out';
+            // alert('Please select a direction before submitting.');
+          }
+        });
+      },      
+    };
+    timeline.push(PTT);
+
+    // Helper function to draw the circle and lines
+    function drawCircle(ctx, task, angle = null) {
+        const canvasWidth = ctx.canvas.width;
+        const canvasHeight = ctx.canvas.height;
+        const centerX = canvasWidth / 2;
+        const centerY = canvasHeight / 2;
+        const radius = Math.min(canvasWidth, canvasHeight) / 2 - 40;
+
+        // Clear the canvas
+        ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+
+        // Draw the circle
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+        ctx.strokeStyle = "black";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Draw the upright line
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.lineTo(centerX, centerY - radius);
+        ctx.strokeStyle = "black";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        // Draw the pointing line if an angle is provided
+        if (angle !== null) {
+            const radians = ((angle - 90) * Math.PI) / 180;
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.lineTo(
+                centerX + radius * Math.cos(radians),
+                centerY + radius * Math.sin(radians)
+            );
+            ctx.strokeStyle = "orange";
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            ctx.lineWidth = 1;
+        }
+
+        // Draw labels
+        ctx.font = "16px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText(task.standing_at, centerX, centerY);
+        ctx.fillText(task.facing_to, centerX, centerY - radius - 10);
+
+        if (angle !== null) {
+            const radians = ((angle - 90) * Math.PI) / 180;
+            const x = centerX + radius * Math.cos(radians);
+            const y = centerY + radius * Math.sin(radians);
+            ctx.fillText(task.pointing_to, x, y);
+        }
+    }
+
+    // Helper function to calculate error
+    function calculateError(loggedAngle, correctAngle) {
+        let error = Math.abs(correctAngle - loggedAngle);
+        return Math.min(error, 360 - error); // Normalize error to <= 180
+    }
+
+    // Data saving trial
+    const save_PTT_data = saveData(`PTT_${filename}`, () => {        
+      const headers = [
+          "participant_id",
+          "task_id",
+          "standing_at",
+          "facing_to",
+          "pointing_to",
+          "correct_angle",
+          "logged_angle",
+          "error",
+          "task_start_time",
+          "task_duration"
+      ].join(",");
+      
+      const rows = PTT_data.map(test => [
+        test.participant_id,
+        test.task_id,
+        test.standing_at,
+        test.facing_to,
+        test.pointing_to,
+        test.correct_angle,
+        test.logged_angle,
+        test.error,
+        test.task_start_time,
+        test.task_duration,
+      ].join(","));
+      
+      return [headers, ...rows].join("\n");
+    });
+
+    // Instructions
+    var LR_instruction = {
+        type: jsPsychHtmlKeyboardResponse,
+        stimulus: `
+          <div class="test-message">
+          <h2>2. Layout Recognition</h2>
+          <p>In this part, you will be explore 360° panoramic views of 5 different building layouts. 
+          You can explore each 360° view by clicking and dragging with your mouse or using the arrow keys.</p>
+          <p>After exploring the views, you will need to choose the layout that best matches what you've seen.</p>
+          <p><strong>Your base payment is guaranteed</strong>, but you can earn <strong>bonus money</strong> by making correct choices while using fewer views.</p>
+          <p>First you'll begin with a short tutorial, 
+          then you'll proceed to the main tasks.</p>
+          <p><strong>NOTE:</strong> The tutorial is just for practice. It does <strong>not</strong> affect your earnings.</p>
+          <p>Press any key to continue.</p>
+          </div>
+        `,
+        data: {
+          name: "Layout Recognition Instructions"
+        }
+    };
+    timeline.push(LR_instruction );
+
+    let tut_currentLayoutIndex = 0;
+    let tut_totalEarned = tut_baseMoney;
+
+    const tut_updateMoneyDisplay = () => {
+      const tut_currentBonus = (tut_maxBonus - tut_viewsTaken * tut_viewCost).toFixed(2);
+      const tut_moneyDisplay = document.querySelector('.money-display');
+      const tut_previousBonus = tut_moneyDisplay.querySelector('.bonus-value')?.textContent.replace('+€', '');
+      
+      // Create new bonus value element
+      const tut_bonusValue = document.createElement('span');
+      tut_bonusValue.className = 'money-value bonus-value';
+      tut_bonusValue.textContent = `+€${tut_currentBonus}`;
+      
+      // Add animation class if bonus decreased
+      if (tut_previousBonus && parseFloat(tut_currentBonus) < parseFloat(tut_previousBonus)) {
+        tut_bonusValue.classList.add('animate');
+      }
+      
+      tut_moneyDisplay.innerHTML = `
+        <div class="money-item">
+          <span class="money-label">Earned Money: &nbsp;</span>
+          <span class="money-value">€${tut_totalEarned.toFixed(2)}</span>
+        </div>
+        <div class="money-item">
+          <span class="money-label">Potential Bonus: </span>
+        </div>
+      `;
+      
+      // Append the bonus value element
+      tut_moneyDisplay.querySelector('.money-item:last-child').appendChild(tut_bonusValue);
+      
+      // Remove animation class after animation completes
+      tut_bonusValue.addEventListener('animationend', () => {
+        tut_bonusValue.classList.remove('animate');
+      });
+    };
+
+    // Add this new function for static panorama rendering
+    const renderStaticPanorama = (image, container) => {
+      container.innerHTML = ""; // clear old pano
+      const pano = new PANOLENS.ImagePanorama(image);
+      const viewer = new PANOLENS.Viewer({ 
+        container, 
+        controlButtons: [],
+        screenSpacePanning: false,
+        dampingFactor: 100,
+        enableDamping: true,
+        output: 'stereo'
+      });
+      viewer.add(pano);
+
+      // Set initial camera position
+      const camera = viewer.getCamera();
+      camera.rotation.y = Math.PI / 2; // Set to 90 degrees (π/2 radians)
+
+      // Disable all user interactions
+      viewer.OrbitControls.enabled = false;
+      viewer.OrbitControls.enableZoom = false;
+      viewer.OrbitControls.enablePan = false;
+      viewer.OrbitControls.enableRotate = false;
+
+      // Set FOV and resize handling
+      const TARGET_HFOV = 90; // Horizontal FOV in degrees
+      const TARGET_VFOV = 60; // Vertical FOV in degrees
+
+      function onResize() {
+        const container = document.getElementById('panorama');
+        const windowRatio = window.innerWidth / window.innerHeight;
+        const targetAspect = Math.tan((TARGET_HFOV * Math.PI/180)/2) / Math.tan((TARGET_VFOV * Math.PI/180)/2);
+
+        // Adjust container dimensions
+        if (windowRatio > targetAspect) {
+          container.style.height = '100vh';
+          container.style.width = `${100 * targetAspect * (window.innerHeight/window.innerWidth)}vw`;
+        } 
+        else {
+          container.style.width = '100vw';
+          container.style.height = `${100 / targetAspect * (window.innerWidth/window.innerHeight)}vh`;
+        }
+
+        // Update camera
+        camera.fov = TARGET_VFOV;
+        camera.aspect = targetAspect;
+        camera.updateProjectionMatrix();
+        viewer.renderer.setSize(container.clientWidth, container.clientHeight);
+      }
+
+      window.addEventListener('resize', onResize);
+      onResize();  // run once to initialize
+
+      // Prevent mouse wheel from doing anything in the panorama
+      container.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }, { passive: false });
+
+      // Return cleanup function
+      return () => {
+        window.removeEventListener('resize', onResize);
+        viewer.dispose();
+      };
+    };
+
+    const tut_renderPanorama = (image, container) => {
+      container.innerHTML = ""; // clear old pano
+      const pano = new PANOLENS.ImagePanorama(image);
+      const viewer = new PANOLENS.Viewer({ 
+        container, 
+        controlButtons: [],
+        screenSpacePanning : false,    // no weird XY drift
+        dampingFactor : 100,      // adjust inertia/smoothing
+        enableDamping : true,      // adds smoothness
+        output: 'stereo'  // Enable stereo rendering for better fullscreen experience
+      });
+      viewer.add(pano);
+
+      tut_progressStartTime = Date.now(); // Reset progress start time for new view
+
+      // In the renderPanorama function, modify the onResize handler:
+      const TARGET_HFOV = 90; // Horizontal FOV in degrees
+      const TARGET_VFOV = 60; // Vertical FOV in degrees
+
+      function onResize() {
+        const container = document.getElementById('panorama');
+        const windowRatio = window.innerWidth / window.innerHeight;
+        const targetAspect = Math.tan((TARGET_HFOV * Math.PI/180)/2) / Math.tan((TARGET_VFOV * Math.PI/180)/2);
+
+        // Adjust container dimensions
+        if (windowRatio > targetAspect) {
+          container.style.height = '100vh';
+          container.style.width = `${100 * targetAspect * (window.innerHeight/window.innerWidth)}vw`;
+        } 
+        else {
+          container.style.width = '100vw';
+          container.style.height = `${100 / targetAspect * (window.innerWidth/window.innerHeight)}vh`;
+        }
+
+        // Update camera
+        const camera = viewer.getCamera();
+        camera.fov = TARGET_VFOV;
+        camera.aspect = targetAspect;
+        camera.updateProjectionMatrix();
+        viewer.renderer.setSize(container.clientWidth, container.clientHeight);
+      }
+
+      window.addEventListener('resize', onResize);
+      onResize();  // run once to initialize
+
+      // How far you can orbit vertically, upper and lower limits.
+      // Range is 0 to Math.PI radians.
+      // 0 = looking straight up, Math.PI = looking straight down
+      viewer.OrbitControls.minPolarAngle = Math.PI * 0.2;  // Allow looking up slightly
+      viewer.OrbitControls.maxPolarAngle = Math.PI * 0.7;  // Allow looking down slightly
+
+      viewer.OrbitControls.rotateSpeed = -0.2;         // mouse drag sensitivity
+      viewer.OrbitControls.minDistance = 0;           // disable zoom
+      viewer.OrbitControls.maxDistance = 1;
+
+      // Prevent mouse wheel from doing anything in the panorama
+      container.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }, { passive: false });
+
+      // Initialize viewing tracking - create new Set for each panorama
+      tut_currentViewedAngles = new Set();
+      const angleThreshold = 90; // Split the 360° view into 6 sections
+      // const requiredSections = 4; // Require viewing at least 6 out of 6 sections
+      let hasRecordedCompletionTime = false; // Add this flag
+      
+      // Disable Next View button and Submit button initially
+      document.getElementById('nextViewBtn').disabled = true;
+      document.getElementById('nextViewBtn').title = "Please view the whole scene to proceed";
+      const submitBtn = document.getElementById('submitBtn');
+      submitBtn.disabled = true;
+      const feedbackDiv = document.querySelector(".feedback-text");
+      if (feedbackDiv) {
+        feedbackDiv.textContent = "Please view the whole scene first.";
+        feedbackDiv.className = "feedback-text feedback-incorrect";
+      }
+
+      // Create circular progress indicator
+      const progressCircle = document.createElement('div');
+      progressCircle.style.position = 'absolute';
+      progressCircle.style.bottom = '20px';
+      progressCircle.style.left = '20px';  // Changed from right to left
+      progressCircle.style.width = '60px';
+      progressCircle.style.height = '60px';
+      progressCircle.style.backgroundColor = 'rgba(0,0,0,0.7)';
+      progressCircle.style.borderRadius = '50%';
+      progressCircle.style.padding = '5px';
+      container.appendChild(progressCircle);
+
+      // Create sections
+      for (let i = 0; i < 4; i++) {
+        const section = document.createElement('div');
+        section.className = `section-${i}`;
+        section.style.position = 'absolute';
+        section.style.width = '100%';
+        section.style.height = '100%';
+        section.style.left = '0%';
+        section.style.top = '0';
+        section.style.transformOrigin = '50% 50%';
+        section.style.transform = `rotate(${-i * 90}deg)`;
+        section.style.clipPath = 'polygon(0 0, 100% 0, 50% 50%)';
+        section.style.backgroundColor = 'rgba(255,255,255,0.2)';
+        section.style.transition = 'background-color 0.3s';
+        progressCircle.appendChild(section);
+      }
+
+      // Add center dot
+      const centerDot = document.createElement('div');
+      centerDot.style.position = 'absolute';
+      centerDot.style.width = '10px';
+      centerDot.style.height = '10px';
+      centerDot.style.backgroundColor = 'white';
+      centerDot.style.borderRadius = '50%';
+      centerDot.style.left = '50%';
+      centerDot.style.top = '50%';
+      centerDot.style.transform = 'translate(-50%, -50%)';
+      progressCircle.appendChild(centerDot);
+
+      // Update sections based on viewed angles
+      const updateSections = () => {
+        tut_currentViewedAngles.forEach(section => {
+          const sectionElement = progressCircle.querySelector(`.section-${section}`);
+          if (sectionElement) {
+            sectionElement.style.backgroundColor = 'rgba(40,167,69,0.8)'; // Green color
+          }
+        });
+
+        // Enable Next View button and Submit button, update arrow color if enough sections have been viewed
+        if (tut_currentViewedAngles.size >= requiredSections) {
+          // Record completion time when progress circle is complete, but only once per view
+          if (!hasRecordedCompletionTime) {
+            const completionTime = (Date.now() - tut_progressStartTime);
+            // const completionTime = (Date.now() - tut_progressStartTime) / 1000;
+            tut_progressCompletionTimes.push(completionTime);
+            hasRecordedCompletionTime = true;
+          }
+
+          // Only enable the Next View button if there are more views available
+          if (tut_viewIndex < test_layout[tut_currentLayoutIndex].tut_panoramas.length - 1) {
+            document.getElementById('nextViewBtn').disabled = false;
+            document.getElementById('nextViewBtn').title = "You can now proceed to the next view";
+            document.getElementById('nextViewBtn').classList.add('complete');
+          } else {
+            document.getElementById('nextViewBtn').disabled = true;
+            document.getElementById('nextViewBtn').title = "No more views available";
+            document.getElementById('nextViewBtn').classList.remove('complete');
+            document.getElementById('nextViewBtn').style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
+            document.getElementById('nextViewBtn').style.cursor = 'not-allowed';
+          }
+
+          progressCircle.style.boxShadow = '0 0 10px rgba(40,167,69,0.8)'; // Add glow effect when complete
+          // Enable Submit button and clear message
+          submitBtn.disabled = false;
+          if (feedbackDiv) {
+            feedbackDiv.textContent = "";
+            feedbackDiv.className = "feedback-text";
+          }
+        } 
+        else {
+          // Disable Submit button and show message
+          submitBtn.disabled = true;
+          if (feedbackDiv) {
+            feedbackDiv.textContent = "Please view the whole scene first.";
+            feedbackDiv.className = "feedback-text feedback-incorrect";
+          }
+        }
+      };
+
+      let lastSection = null;
+      // Track camera movement using OrbitControls change event
+      const changeHandler = () => {
+        const camera = viewer.getCamera();
+        const longitude = ((camera.rotation.y * (180/Math.PI)) + 360) % 360;
+        const currentSection = Math.floor((longitude + 360) % 360 / 90) % 4;
+
+        if (currentSection !== lastSection) {
+          // logAreaChange(`section${currentSection + 1}`);
+          lastSection = currentSection;
+        }
+
+        const section = Math.floor(longitude / angleThreshold);
+        tut_currentViewedAngles.add(section);
+        updateSections();
+      };
+
+      // Add the event listener
+      viewer.OrbitControls.addEventListener('change', changeHandler);
+
+      // Clean up function to remove event listeners when switching panoramas
+      const cleanup = () => {
+        viewer.OrbitControls.removeEventListener('change', changeHandler);
+        viewer.dispose();
+        // Reset the right hover trigger
+        document.getElementById('nextViewBtn').classList.remove('complete');
+        document.getElementById('nextViewBtn').disabled = true;
+        document.getElementById('nextViewBtn').title = "Please view the whole scene to proceed";
+        hasRecordedCompletionTime = false; // Reset the flag when cleaning up
+      };
+
+      // Store cleanup function on the container for later use
+      container.cleanup = cleanup;
+    };
+    
+    const LR_tutorial = {
+      type: jsPsychHtmlButtonResponse,
+      data: {
+        name: "Tutorial_Instructions",
+      },
+      stimulus: `
+        <div style="height: 100vh; display: flex; flex-direction: column; gap: 1vh;">
+          <div class="money-container">
+            <div class="money-display">
+              <div style="margin: 0.5vh 0;">
+                <span style="color: rgba(255, 255, 255, 0.9);">Earned Money: &nbsp</span>
+                <span style="color: #28a745; font-weight: bold; font-size: 1.2em;"> €€</span>
+              </div>
+              <div style="margin: 0.5vh 0;">
+                <span style="color: rgba(255, 255, 255, 0.9);">Potential Bonus: </span>
+                <span style="color: rgba(255, 255, 255, 0.9); font-size: 1.2em;">+€€</span>
+              </div>
+            </div>
+            <button id="nextViewBtn" class="next-view-btn" disabled title="Please view the whole scene to proceed">
+              Next View
+            </button>
+          </div>
+          <div id="panorama" class="panorama-container">
+          </div>
+          <div class="hover-trigger"></div>
+          <div class="bottom-section">
+            <div id="layout-container">
+              <p>Select the layout you think is correct:</p>
+              <div class="layout-options-container">
+                <!-- Layout options will be inserted here dynamically -->
+                <div style="position: relative; margin: 0 1vw;">
+                  <img src="Tutorial_data/option1.4.png" style="width: 40vmin; height: auto; border: 2px solid transparent; cursor: pointer;" alt="Layout A">
+                  <div style="position: absolute; bottom: -3vh; left: 50%; transform: translateX(-50%); font-size: calc(14px + 0.2vw); font-weight: bold; color: #333;">A</div>
+                </div>
+                <div style="position: relative; margin: 0 1vw;">
+                  <img src="Tutorial_data/option2.3.png" style="width: 40vmin; height: auto; border: 2px solid transparent; cursor: pointer;" alt="Layout B">
+                  <div style="position: absolute; bottom: -3vh; left: 50%; transform: translateX(-50%); font-size: calc(14px + 0.2vw); font-weight: bold; color: #333;">B</div>
+                </div>
+              </div>
+            </div>
+            <div class="potential-bonus-message">
+              If you choose the correct answer, you will earn the available extra Bonus
+            </div>
+            <div class="feedback-text"></div>
+            <div id="message" class="message-container"></div>
+            <button class="submitBtn">Submit Choice</button>
+            <button id="nextLayoutBtn" style="display: none;">Next Layout</button>
+          </div>
+        </div>
+      `,
+      choices: [],
+
+      on_load: function() {
+        document.body.classList.add('black-background');
+
+        // Initialize the static panorama
+        const panoDiv = document.getElementById('panorama');
+        renderStaticPanorama(test_layout[0].tut_panoramas[0], panoDiv);
+
+        // Initialize tutorial state
+        let tutorialStep = 0;
+        const tutorialSteps = [
+          {
+            message: "Welcome to the tutorial! This will show you how to complete the upcoming tasks.",
+          },
+          {
+            message: "This is a <strong>panoramic view</strong> of a layout. Later, you can use your mouse (click and drag) or arrow keys to look around.",
+            highlight: "panorama-container"
+          },
+          {
+            message: "Once you've viewed the whole scene, the <strong>Next View</strong> button will become available. Use it to see another view of the same layout.",
+            position: "top",
+            highlight: "next-view-btn"
+          },
+          {
+            message: "<strong>Earned Money</strong> is the amount you've collected so far.<br><strong>Potential Bonus</strong> is the extra bonus you can earn per layout. <br><br> Note: From the third view onward, the bonus starts to decrease.",
+            position: "top",
+            highlight: "money-display"
+          },
+          {
+            message: "Move your mouse to the bottom of the screen to reveal the <strong>layout options</strong>. There, you can select the layout that best matches what you've seen.",
+            position: "top",
+            highlight: "hover-trigger"
+          },
+          {
+            message: "Your goal is to identify the layout that matches what you’ve seen. <br>If your choice is correct, you'll earn the bonus!",
+            position: "center"
+          },
+          {
+            message: "Now it's your turn! try this example layout to get started.",
+            position: "center"
+          }
+        ];
+
+        // Create tutorial overlay
+        const overlay = document.createElement('div');
+        overlay.style.position = 'fixed';
+        overlay.style.top = '0';
+        overlay.style.left = '0';
+        overlay.style.width = '100%';
+        overlay.style.height = '100%';
+        overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+        overlay.style.zIndex = '1000';
+        overlay.style.display = 'flex';
+        overlay.style.justifyContent = 'center';
+        overlay.style.alignItems = 'center';
+        document.body.appendChild(overlay);
+
+        // Create message box
+        const messageBox = document.createElement('div');
+        messageBox.style.backgroundColor = 'white';
+        messageBox.style.padding = '20px';
+        messageBox.style.borderRadius = '10px';
+        messageBox.style.maxWidth = '80%';
+        messageBox.style.textAlign = 'center';
+        messageBox.style.position = 'relative';
+        overlay.appendChild(messageBox);
+
+        // Create continue button
+        const continueBtn = document.createElement('button');
+        continueBtn.textContent = 'Continue';
+        continueBtn.style.marginTop = '20px';
+        continueBtn.style.padding = '10px 20px';
+        continueBtn.style.backgroundColor = '#007bff';
+        continueBtn.style.color = 'white';
+        continueBtn.style.border = 'none';
+        continueBtn.style.borderRadius = '5px';
+        continueBtn.style.cursor = 'pointer';
+        messageBox.appendChild(continueBtn);
+
+        // Function to show tutorial step
+        function showTutorialStep() {
+          const step = tutorialSteps[tutorialStep];
+          messageBox.innerHTML = `
+            <div style="margin-bottom: 20px;">${step.message}</div>
+            <button style="padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">
+              Continue
+            </button>
+          `;
+
+          // Reset any previous positioning
+          messageBox.style.top = '';
+          messageBox.style.bottom = '';
+          messageBox.style.transform = '';
+
+          // Position the message box
+          if (step.position === 'top') {
+            messageBox.style.position = 'absolute';
+            messageBox.style.top = '20%';
+            messageBox.style.left = '50%';
+            messageBox.style.transform = 'translateX(-50%)';
+          } else if (step.position === 'bottom') {
+            messageBox.style.position = 'absolute';
+            messageBox.style.bottom = '20%';
+            messageBox.style.left = '50%';
+            messageBox.style.transform = 'translateX(-50%)';
+          } else if (step.position === 'center') { // center
+            messageBox.style.position = 'absolute';
+            messageBox.style.transform = 'translateX(-50%)';
+            messageBox.style.justifyContent = 'center';
+            messageBox.style.alignItems = 'center';
+          }
+
+          // Highlight element if specified
+          if (step.highlight) {
+            const element = document.querySelector(`.${step.highlight}`);
+            if (element) {
+              element.style.boxShadow = '0 0 0 5px #ffff00, 0 0 5px #ffff00';
+              element.style.transition = 'box-shadow 0.3s';
+            }
+          }
+
+          // Add click handler for continue button
+          messageBox.querySelector('button').onclick = () => {
+            // Remove highlight
+            if (step.highlight) {
+              const element = document.querySelector(`.${step.highlight}`);
+              if (element) {
+                element.style.boxShadow = '';
+              }
+            }
+
+            tutorialStep++;
+            if (tutorialStep < tutorialSteps.length) {
+              showTutorialStep();
+            } else {
+              overlay.remove();
+              jsPsych.finishTrial();
+            }
+          };
+        }
+
+        // Start the tutorial
+        showTutorialStep();
+      }
+    };
+    timeline.push(LR_tutorial);
+
+    const tutorial_test = {
+      type: jsPsychHtmlButtonResponse,
+      data: {
+        name: "Tutorial"
+      },
+      stimulus: `
+        <div style="height: 100vh; display: flex; flex-direction: column; gap: 1vh;">
+          <div style="position: absolute; top: 20px; left: 50%; transform: translateX(-50%); 
+              background-color: rgba(0, 0, 0, 0.7); color: white; padding: 10px 20px; 
+              border-radius: 5px; z-index: 1000; font-size: 1.2em;">
+            Example Trial - No Bonus Earned
+          </div>
+          <div class="money-container">
+            <div class="money-display"></div>
+            <button id="nextViewBtn" class="next-view-btn" disabled title="Please view the whole scene to proceed">
+              Next View
+            </button>
+          </div>
+          <div id="panorama"></div>
+          <div class="hover-trigger"></div>
+          <div class="bottom-section">
+            <div id="layout-container">
+              <p>Select the layout you think is correct:</p>
+              <div class="layout-options-container">
+                <!-- Layout options will be inserted here dynamically -->
+              </div>
+            </div>
+            <div class="potential-bonus-message">
+              If you choose the correct answer, you will earn the available extra Bonus
+            </div>
+            <div class="feedback-text"></div>
+            <div id="message" class="message-container"></div>
+            <button id="submitBtn">Submit Choice</button>
+            <button id="nextLayoutBtn" style="display: none;">Next Layout</button>
+          </div>
+        </div>
+      `,
+      choices: [], // No choices - we'll use our custom buttons
+      
+      on_load: function() {
+        // Add black background to body when trial starts
+        document.body.classList.add('black-background');
+
+        // Initialize layout start time when the trial loads
+        tut_layoutStartTime = getTimestamp();
+        // Initialize view start time when the trial loads
+        tut_viewStartTime = Date.now();
+        
+        // Initialize money display
+        tut_updateMoneyDisplay();
+
+        // Add event listeners for bottom section and hover trigger interaction
+        const bottomSection = document.querySelector('.bottom-section');
+        const hoverTrigger = document.querySelector('.hover-trigger');
+
+        bottomSection.addEventListener('mouseenter', () => {
+          hoverTrigger.classList.add('hidden');
+        });
+
+        bottomSection.addEventListener('mouseleave', () => {
+          hoverTrigger.classList.remove('hidden');
+        });
+
+        document.addEventListener('mousemove', (e) => {
+          const hoverTriggerRect = hoverTrigger.getBoundingClientRect();
+          const isHovering = e.clientY >= hoverTriggerRect.top && 
+                            e.clientX >= hoverTriggerRect.left && 
+                            e.clientX <= hoverTriggerRect.right;
+
+          if (isHovering || bottomSection.matches(':hover')) {
+            bottomSection.classList.add('visible');
+            hoverTrigger.classList.add('hidden');
+          } else {
+            bottomSection.classList.remove('visible');
+            hoverTrigger.classList.remove('hidden');
+          }
+        })
+
+        // Add visibility check on page load and after transitions
+        const checkHoverTriggerVisibility = () => {
+          const bottomSectionRect = bottomSection.getBoundingClientRect();
+          const hoverTriggerRect = hoverTrigger.getBoundingClientRect();
+          
+          if (bottomSectionRect.top < window.innerHeight) {
+            hoverTrigger.classList.add('hidden');
+          } else {
+            hoverTrigger.classList.remove('hidden');
+          }
+        };
+
+        // Check visibility on page load
+        checkHoverTriggerVisibility();
+
+        // Check visibility after bottom section transitions
+        bottomSection.addEventListener('transitionend', checkHoverTriggerVisibility);
+
+        // Initialize panorama
+        const panoDiv = document.getElementById('panorama');
+        tut_renderPanorama(test_layout[tut_currentLayoutIndex].tut_panoramas[tut_viewIndex], panoDiv);
+
+        // Update layout options
+        const layoutOptionsContainer = document.querySelector('.layout-options-container');
+        layoutOptionsContainer.innerHTML = test_layout[tut_currentLayoutIndex].tut_options.map((option, index) => {
+          const choice = String.fromCharCode(65 + index); // Convert 0,1,2 to A,B,C
+          return `
+            <div class="layout-option">
+              <img src="${option}" class="layout-img" data-choice="${choice}" />
+              <div class="layout-label">${choice}</div>
+            </div>
+          `;
+        }).join('');
+
+        // Setup layout selection
+        let tut_selectedLayout = null;
+        document.querySelectorAll(".layout-img").forEach(img => {
+          img.addEventListener("click", function () {
+            // Hide confirmation message if it's showing
+            const messageDiv = document.getElementById('message');
+            messageDiv.style.display = "none";
+            messageDiv.innerHTML = ''; // Clear the confidence container completely
+            
+            // Hide the "Please select a layout first" message
+            const feedbackDiv = document.querySelector(".feedback-text");
+            if (feedbackDiv.textContent === "Please select a layout first.") {
+              feedbackDiv.textContent = "";
+              feedbackDiv.className = "feedback-text";
+            }
+            
+            document.querySelectorAll(".layout-img").forEach(i => {
+              i.classList.remove('selected');
+            });
+            this.classList.add('selected');
+            tut_selectedLayout = this.getAttribute("data-choice");
+          });
+        });
+
+        // Add click handler for the right hover trigger
+        const nextView = document.getElementById('nextViewBtn');
+        nextView.addEventListener('click', function() {
+          // Check if the trigger has the complete class (added when progress is done)
+          if (nextView.classList.contains('complete')) {
+            // Hide confirmation message if it's showing
+            document.getElementById('message').style.display = "none";
+            
+            if (tut_viewIndex < test_layout[tut_currentLayoutIndex].tut_panoramas.length - 1) {
+              // Record duration of current view
+              const tut_viewDuration = (Date.now() - tut_viewStartTime);
+              // const tut_viewDuration = (Date.now() - tut_viewStartTime) / 1000;
+              tut_viewDurations.push(tut_viewDuration);
+              
+              tut_viewIndex++;
+              tut_viewsTaken++;
+                
+              // Clean up the previous panorama before rendering the new one
+              const panoDiv = document.getElementById('panorama');
+              if (panoDiv.cleanup) {
+                panoDiv.cleanup();
+              }
+                
+              tut_renderPanorama(test_layout[tut_currentLayoutIndex].tut_panoramas[tut_viewIndex], panoDiv);
+              tut_updateMoneyDisplay();
+
+              // Reset progress tracking for new view
+              tut_progressStartTime = Date.now();
+
+              // Update the bonus amount in the bottom section
+              const bonusAmount = document.querySelector('.bonus-amount');
+              if (bonusAmount) {
+                bonusAmount.textContent = (tut_maxBonus - tut_viewsTaken * tut_viewCost).toFixed(2);
+              }
+
+              // Reset buttons to initial state
+              const confirmBtn = document.getElementById('confirmBtn');
+              if (confirmBtn) {
+                confirmBtn.remove();
+              }
+              submitBtn.style.display = 'block';
+              submitBtn.disabled = true;  // Keep submit button disabled until progress is complete
+              const feedbackDiv = document.querySelector(".feedback-text");
+              if (feedbackDiv) {
+                feedbackDiv.textContent = "Please view the whole scene first.";
+                feedbackDiv.className = "feedback-text feedback-incorrect";
+              }
+
+              // Deselect any selected layout and confidence options
+              document.querySelectorAll(".layout-img").forEach(img => {
+                img.classList.remove('selected');
+              });
+              document.querySelectorAll(".confidence-option").forEach(opt => {
+                opt.classList.remove('selected');
+              });
+            
+              // Start timing new view
+              tut_viewStartTime = Date.now();
+            }
+          }
+        });
+
+        // Add click handlers to layout images
+        document.querySelectorAll(".layout-img").forEach(img => {
+          img.addEventListener("click", function () {
+            const choice = this.dataset.choice;
+            // Hide confirmation message if it's showing
+            const messageDiv = document.getElementById('message');
+            messageDiv.style.display = "none";
+            messageDiv.innerHTML = ''; // Clear the confidence container completely
+            
+            // Hide the "Please select a layout first" message
+            const feedbackDiv = document.querySelector(".feedback-text");
+            if (feedbackDiv.textContent === "Please select a layout first.") {
+              feedbackDiv.textContent = "";
+              feedbackDiv.className = "feedback-text";
+            }
+            
+            // Reset buttons to initial state
+            const confirmBtn = document.getElementById('confirmBtn');
+            if (confirmBtn) {
+              confirmBtn.remove();
+            }
+            submitBtn.style.display = 'block';
+            
+            // Only enable submit button if progress is complete
+            if (tut_currentViewedAngles.size >= requiredSections) {
+              submitBtn.disabled = false;
+              if (feedbackDiv) {
+                feedbackDiv.textContent = "";
+                feedbackDiv.className = "feedback-text";
+              }
+            } else {
+              submitBtn.disabled = true;
+              if (feedbackDiv) {
+                feedbackDiv.textContent = "Please view the whole scene first.";
+                feedbackDiv.className = "feedback-text feedback-incorrect";
+              }
+            }
+
+            // Reset confidence selection
+            document.querySelectorAll(".confidence-option").forEach(opt => {
+              opt.classList.remove('selected');
+            });
+            
+            document.querySelectorAll(".layout-img").forEach(i => {
+              i.classList.remove('selected');
+            });
+            this.classList.add('selected');
+          });
+        });
+
+        let reminderShown = false;
+        // Modify Submit button handler
+        document.getElementById('submitBtn').addEventListener('click', () => {
+          logActionInArea(`submitBtn`);
+          const tut_selectedLayout = document.querySelector(".layout-img.selected")?.getAttribute("data-choice");
+          const messageDiv = document.getElementById('message');
+          const feedbackDiv = document.querySelector(".feedback-text");
+          const tut_currentLayout = test_layout[tut_currentLayoutIndex];
+          
+          if (!tut_selectedLayout) {
+            feedbackDiv.textContent = "Please select a layout first.";
+            feedbackDiv.className = "feedback-text feedback-incorrect";
+            return;
+          }
+
+          // Check if this is the first view and reminder hasn't been shown yet
+          if (tut_viewIndex === 0 && !reminderShown) {
+            messageDiv.innerHTML = `
+              <div class="reminder-message">
+                <p style="color: #e63946;">It's impossible to identify the correct layout from just the first view. Try viewing the second view by clicking the <strong>Next View</strong> button.</p>
+              </div>
+            `;
+            messageDiv.style.display = "block";
+            reminderShown = true;  // Set the flag to true
+
+            return; 
+          }
+
+          // Check if confidence is already selected
+          const confidenceContainer = messageDiv.querySelector('.confidence-container');
+          const tut_selectedConfidence = messageDiv.querySelector('.confidence-option.selected')?.dataset.value;
+          
+          if (confidenceContainer && !tut_selectedConfidence) {
+            confidenceContainer.classList.add('shake');
+            setTimeout(() => {
+              confidenceContainer.classList.remove('shake');
+            }, 500);
+            return;
+          }
+
+          // Show confidence scale if not already shown
+          if (!confidenceContainer) {
+            messageDiv.innerHTML = `
+              <div class="confidence-container">
+                <p>How confident are you in your answer?</p>
+                <div class="confidence-options">
+                  <div class="confidence-option" data-value="1">
+                    <div class="check-circle"></div>
+                    <span class="option-text">Not confident at all <br>(0–20%)</span>
+                  </div>
+                  <div class="confidence-option" data-value="2">
+                    <div class="check-circle"></div>
+                    <span class="option-text">Slightly confident <br>(21–40%)</span>
+                  </div>
+                  <div class="confidence-option" data-value="3">
+                    <div class="check-circle"></div>
+                    <span class="option-text">Somewhat confident <br>(41–60%)</span>
+                  </div>
+                  <div class="confidence-option" data-value="4">
+                    <div class="check-circle"></div>
+                    <span class="option-text">Very confident <br>(61–80%)</span>
+                  </div>
+                  <div class="confidence-option" data-value="5">
+                    <div class="check-circle"></div>
+                    <span class="option-text">Completely confident <br>(81–100%)</span>
+                  </div>
+                </div>
+              </div>
+            `;
+            messageDiv.className = "message-container";
+            messageDiv.style.display = "block";
+
+            // Add click handlers for confidence options
+            const confidenceOptions = messageDiv.querySelectorAll('.confidence-option');
+            const submitBtn = document.getElementById('submitBtn');
+          
+            confidenceOptions.forEach(option => {
+              option.addEventListener('click', () => {
+                logActionInArea(`${option.dataset.value}`);
+                confidenceOptions.forEach(opt => opt.classList.remove('selected'));
+                option.classList.add('selected');
+                
+                // Hide submit button and show confirm button
+                submitBtn.style.display = 'none';
+                // Remove existing confirm button if it exists
+                const existingConfirmBtn = document.getElementById('confirmBtn');
+                if (existingConfirmBtn) {
+                  existingConfirmBtn.remove();
+                }
+                const confirmBtn = document.createElement('button');
+                confirmBtn.id = 'confirmBtn';
+                confirmBtn.className = 'confirm-btn';
+                confirmBtn.textContent = 'Confirm Submission';
+                confirmBtn.style.margin = submitBtn.style.margin;  // Match margin only
+                submitBtn.parentNode.insertBefore(confirmBtn, submitBtn.nextSibling);
+                
+                // Add click handler for confirm button
+                confirmBtn.onclick = () => {
+                  // logActionInArea(`confirmBtn`);
+                  // Hide confirm button and show next layout button
+                  confirmBtn.style.display = 'none';
+                  const nextLayoutBtn = document.getElementById('nextLayoutBtn');
+                  nextLayoutBtn.style.display = 'block';
+                  
+                  // Disable the Next View button and right hover trigger when showing Next Layout button
+                  document.getElementById('nextViewBtn').disabled = true;
+                  document.getElementById('nextViewBtn').title = "Choice submitted - cannot view other scenes";
+                  document.getElementById('nextViewBtn').style.pointerEvents = 'none';
+                  document.getElementById('nextViewBtn').style.opacity = '0.5';
+                  
+                  // Fix the bottom section in place
+                  document.querySelector('.bottom-section').classList.add('fixed');
+                      
+                  // Record duration of final view
+                  const tut_finalViewDuration = (Date.now() - tut_viewStartTime);
+                  // const tut_finalViewDuration = (Date.now() - tut_viewStartTime) / 1000;
+                  tut_viewDurations.push(tut_finalViewDuration);
+
+                  // Record data for this layout
+                  const tutorialResult = {
+                    tutorial_participant_id: subject_id,
+                    tutorial_layout_index: tut_currentLayoutIndex + 1,
+                    tutorial_start_time: tut_layoutStartTime,
+                    tutorial_end_time: getTimestamp(),
+                    tutorial_view_count: tut_viewsTaken + 1,
+                    tutorial_view_durations: tut_viewDurations.join(';'),
+                    tutorial_progress_times: tut_progressCompletionTimes.join(';'),
+                    tutorial_total_time: tut_viewDurations.reduce((a, b) => a + b, 0),
+                    tutorial_selected_choice: tut_selectedLayout,
+                    tutorial_correct_choice: tut_currentLayout.tut_correctAnswer,
+                    tutorial_is_correct: tut_selectedLayout === tut_currentLayout.tut_correctAnswer,
+                    tutorial_confidence: parseInt(option.dataset.value),
+                    tutorial_earned_bonus: tut_selectedLayout === tut_currentLayout.tut_correctAnswer ? (tut_currentLayout.tut_maxBonus - tut_viewsTaken * tut_viewCost) : 0,
+                  };
+                  tutorialLayoutData.push(tutorialResult);
+
+                  // Hide confirmation message
+                  messageDiv.style.display = "none";
+                  messageDiv.innerHTML = ''; // Clear the confidence container completely
+
+                  // Hide the bonus message
+                  const bonusMessage = document.querySelector('.potential-bonus-message');
+                  if (bonusMessage) {
+                    bonusMessage.style.display = 'none';
+                  }
+
+                  // Disable further selections
+                  document.querySelectorAll(".layout-img").forEach(img => {
+                    img.style.pointerEvents = "none";
+                  });
+
+                  const isCorrect = tut_selectedLayout === tut_currentLayout.tut_correctAnswer;
+                  const earnedBonus = isCorrect ? (tut_currentLayout.tut_maxBonus - tut_viewsTaken * tut_viewCost) : 0;
+                  tut_totalEarned += earnedBonus;
+
+                  // Show feedback
+                  if (isCorrect) {
+                    feedbackDiv.innerHTML = `<span class="feedback-correct">Correct! Well done!</span><br><br><span>You're ready for the main experiment!</span>`;
+                    feedbackDiv.className = "feedback-text";
+                    document.querySelector(`.layout-img[data-choice="${tut_selectedLayout}"]`).classList.add("correct");
+                  } 
+                  else {
+                    feedbackDiv.innerHTML = `<span class="feedback-incorrect">Incorrect. The correct layout is ${tut_currentLayout.tut_correctAnswer}.</span><br><br><span>Try to understand why this was the correct answer.</span>`;
+                    feedbackDiv.className = "feedback-text";
+                    document.querySelector(`.layout-img[data-choice="${tut_selectedLayout}"]`).classList.add("incorrect");
+                    document.querySelector(`.layout-img[data-choice="${tut_currentLayout.tut_correctAnswer}"]`).classList.add("correct");
+                  }
+
+                  // Update money display with zero potential bonus
+                  const tut_moneyDisplay = document.querySelector('.money-display');
+                  tut_moneyDisplay.innerHTML = `
+                    <div class="money-item">
+                      <span class="money-label">Earned Money: </span>
+                      <span class="money-value">€${tut_totalEarned.toFixed(2)}</span>
+                    </div>
+                    <div class="money-item">
+                      <span class="money-label">Potential Bonus: </span>
+                      <span class="money-value bonus-value">+€0.00</span>
+                    </div>
+                  `;
+
+                  // Show next layout button if there are more layouts
+                  if (tut_currentLayoutIndex < test_layout.length - 1) {
+                    nextLayoutBtn.textContent = 'Next Layout';
+                    nextLayoutBtn.onclick = () => {
+                      // logAreaChange('between-layouts');
+                      tut_currentLayoutIndex++;
+                      tut_viewIndex = 0;
+                      tut_viewsTaken = 0;
+                          
+                      // Clean up the previous panorama
+                      const panoDiv = document.getElementById('panorama');
+                      if (panoDiv.cleanup) {
+                        panoDiv.cleanup();
+                      }
+                      
+                      // Then log entry to new layout
+                      // logAreaChange(`layout-${tut_currentLayoutIndex + 1}-start`);
+
+                      // Reset the trial for the next layout
+                      document.getElementById('submitBtn').style.display = 'block';
+                      document.getElementById('submitBtn').disabled = false;
+                      document.getElementById('nextViewBtn').disabled = true;
+                      document.getElementById('nextViewBtn').title = "Please view the whole scene to proceed";
+                      nextViewBtn.classList.remove('complete');
+                      nextViewBtn.style.backgroundColor = '';  // Reset to default
+                      nextViewBtn.style.cursor = '';
+                      
+                      // Restore the right hover trigger to normal state
+                      const nextView = document.getElementById('nextViewBtn');
+                      nextView.style.pointerEvents = 'auto';
+                      nextView.style.opacity = '1';
+                      nextView.classList.remove('complete');
+                      
+                      // Remove fixed class from bottom section to restore normal behavior
+                      const bottomSection = document.querySelector('.bottom-section');
+                      bottomSection.classList.remove('fixed');
+                      bottomSection.style.transition = 'none';  // Disable transition temporarily
+                      // bottomSection.style.bottom = '-100%';  // Force collapse
+                      bottomSection.classList.remove('visible');
+                          
+                      // Reset the hover behavior after a short delay (after transition)
+                      setTimeout(() => {
+                          bottomSection.style.bottom = '';  // Remove inline style to restore CSS transitions
+                          
+                          bottomSection.style.transition = 'bottom 0.3s ease-in-out';  // Restore original transition
+
+                          // Show and reset the hover trigger
+                          const hoverTrigger = document.querySelector('.hover-trigger');
+                          hoverTrigger.style.display = 'flex';
+                          hoverTrigger.classList.remove('hidden');
+
+                          // Re-add hover event listeners
+                          hoverTrigger.addEventListener('mouseenter', () => {
+                              // bottomSection.style.bottom = '0';
+                              bottomSection.classList.add('visible');
+                          });
+                          
+                          bottomSection.addEventListener('mouseleave', () => {
+                              // bottomSection.style.bottom = '-100%';
+                              bottomSection.classList.remove('visible');
+                              // logAreaChange(null); // Will log exit from bottom-section
+                          });
+                      }, 30);  // Delay matches the CSS transition time
+
+                      document.querySelector(".feedback-text").textContent = "";
+                      document.querySelectorAll(".layout-img").forEach(img => {
+                        img.style.pointerEvents = "auto";
+                        img.classList.remove("selected", "correct", "incorrect");
+                      });
+                      
+                      // Update panorama and layout options for the new layout
+                      tut_renderPanorama(test_layout[tut_currentLayoutIndex].tut_panoramas[0], document.getElementById('panorama'));
+                      
+                      // Update layout options for new layout
+                      const layoutOptionsContainer = document.querySelector('.layout-options-container');
+                      layoutOptionsContainer.innerHTML = test_layout[tut_currentLayoutIndex].tut_options.map((option, index) => {
+                        const choice = String.fromCharCode(65 + index); // Convert 0,1,2 to A,B,C
+                        return `
+                          <div class="layout-option">
+                            <img src="${option}" class="layout-img" data-choice="${choice}" />
+                            <div class="layout-label">${choice}</div>
+                          </div>
+                        `;
+                      }).join('');
+                      
+                      // Show the bonus message again for the new layout
+                      const bonusMessage = document.querySelector('.potential-bonus-message');
+                      if (bonusMessage) {
+                        bonusMessage.style.display = 'block';
+                        // Update the bonus amount to match the current potential bonus
+                        const bonusAmount = bonusMessage.querySelector('.bonus-amount');
+                        if (bonusAmount) {
+                          bonusAmount.textContent = (tut_maxBonus - tut_viewsTaken * tut_viewCost).toFixed(2);
+                        }
+                      }
+                      
+                      // Re-attach click handlers to new layout images
+                      document.querySelectorAll(".layout-img").forEach(img => {
+                        img.addEventListener("click", function () {
+                          const choice = this.dataset.choice;
+                          logActionInArea(`${choice}`);
+                          // Hide confirmation message if it's showing
+                          const messageDiv = document.getElementById('message');
+                          messageDiv.style.display = "none";
+                          messageDiv.innerHTML = ''; // Clear the confidence container completely
+                          
+                          // Hide the "Please select a layout first" message
+                          const feedbackDiv = document.querySelector(".feedback-text");
+                          if (feedbackDiv.textContent === "Please select a layout first.") {
+                            feedbackDiv.textContent = "";
+                            feedbackDiv.className = "feedback-text";
+                          }
+
+                          // Reset buttons to initial state
+                          const confirmBtn = document.getElementById('confirmBtn');
+                          if (confirmBtn) {
+                            confirmBtn.remove();
+                          }
+                          const submitBtn = document.getElementById('submitBtn');
+                          submitBtn.style.display = 'block';
+                              
+                          document.querySelectorAll(".layout-img").forEach(i => {
+                            i.classList.remove('selected');
+                          });
+                          this.classList.add('selected');
+                        });
+                      });
+                      
+                      // Update money display to show accumulated earnings and new potential bonus
+                      tut_updateMoneyDisplay();
+                      
+                      // Hide the next layout button
+                      nextLayoutBtn.style.display = 'none';
+
+                      // When moving to next layout or finishing, reset the timing variables
+                      tut_viewDurations = [];
+                      tut_progressCompletionTimes = [];
+                      tut_viewStartTime = Date.now();
+                    };
+                  }
+                  else {
+                    nextLayoutBtn.textContent = 'To the main experiment';
+                    nextLayoutBtn.onclick = () => {
+                      // Log final transition
+                      // logAreaChange('experiment-end');
+
+                      jsPsych.finishTrial();
+                    };
+                  };
+                }
+              });
+            });
+          };
+        }); 
+      },
+
+      on_finish: function(data) {
+        // Remove black background from body when trial ends
+        document.body.classList.remove('black-background');
+      }
+    };
+    timeline.push(tutorial_test);
+
+    let currentLayoutIndex = 0;
+    let totalEarned = baseMoney;
+
+    // Function to update money display
+    const updateMoneyDisplay = () => {
+      const currentBonus = (maxBonus - viewsForBonus * viewCost).toFixed(2);
+      const moneyDisplay = document.querySelector('.money-display');
+      const previousBonus = moneyDisplay.querySelector('.bonus-value')?.textContent.replace('+€', '');
+      
+      // Create new bonus value element
+      const bonusValue = document.createElement('span');
+      bonusValue.className = 'money-value bonus-value';
+      bonusValue.textContent = `+€${currentBonus}`;
+      
+      // Add animation class if bonus decreased
+      if (previousBonus && parseFloat(currentBonus) < parseFloat(previousBonus)) {
+        bonusValue.classList.add('animate');
+      }
+      
+      moneyDisplay.innerHTML = `
+        <div class="money-item">
+          <span class="money-label">Earned Money: &nbsp;</span>
+          <span class="money-value">€${totalEarned.toFixed(2)}</span>
+        </div>
+        <div class="money-item">
+          <span class="money-label">Potential Bonus: </span>
+        </div>
+      `;
+      
+      // Append the bonus value element
+      moneyDisplay.querySelector('.money-item:last-child').appendChild(bonusValue);
+      
+      // Remove animation class after animation completes
+      bonusValue.addEventListener('animationend', () => {
+        bonusValue.classList.remove('animate');
+      });
+    };
+
+    const renderPanorama = (image, container) => {
+      container.innerHTML = ""; // clear old pano
+      const pano = new PANOLENS.ImagePanorama(image);
+      const viewer = new PANOLENS.Viewer({ 
+        container, 
+        controlButtons: [],
+        screenSpacePanning : false,    // no weird XY drift
+        dampingFactor : 100,      // adjust inertia/smoothing
+        enableDamping : true,      // adds smoothness
+        output: 'stereo'  // Enable stereo rendering for better fullscreen experience
+      });
+      viewer.add(pano);
+
+      progressStartTime = Date.now(); // Reset progress start time for new view
+
+      // In the renderPanorama function, modify the onResize handler:
+      const TARGET_HFOV = 90; // Horizontal FOV in degrees
+      const TARGET_VFOV = 60; // Vertical FOV in degrees
+
+      function onResize() {
+        const container = document.getElementById('panorama');
+        const windowRatio = window.innerWidth / window.innerHeight;
+        const targetAspect = Math.tan((TARGET_HFOV * Math.PI/180)/2) / Math.tan((TARGET_VFOV * Math.PI/180)/2);
+
+        // Adjust container dimensions
+        if (windowRatio > targetAspect) {
+          container.style.height = '100vh';
+          container.style.width = `${100 * targetAspect * (window.innerHeight/window.innerWidth)}vw`;
+        } 
+        else {
+          container.style.width = '100vw';
+          container.style.height = `${100 / targetAspect * (window.innerWidth/window.innerHeight)}vh`;
+        }
+
+        // Update camera
+        const camera = viewer.getCamera();
+        camera.fov = TARGET_VFOV;
+        camera.aspect = targetAspect;
+        camera.updateProjectionMatrix();
+        viewer.renderer.setSize(container.clientWidth, container.clientHeight);
+      }
+
+      window.addEventListener('resize', onResize);
+      onResize();  // run once to initialize
+
+      // How far you can orbit vertically, upper and lower limits.
+      // Range is 0 to Math.PI radians.
+      // 0 = looking straight up, Math.PI = looking straight down
+      viewer.OrbitControls.minPolarAngle = Math.PI * 0.2;  // Allow looking up slightly
+      viewer.OrbitControls.maxPolarAngle = Math.PI * 0.7;  // Allow looking down slightly
+
+      viewer.OrbitControls.rotateSpeed = -0.2;         // mouse drag sensitivity
+      viewer.OrbitControls.minDistance = 0;           // disable zoom
+      viewer.OrbitControls.maxDistance = 1;
+
+      // Prevent mouse wheel from doing anything in the panorama
+      container.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }, { passive: false });
+
+      // Initialize viewing tracking - create new Set for each panorama
+      currentViewedAngles = new Set();
+      const angleThreshold = 90; // Split the 360° view into 6 sections
+      // const requiredSections = 4; // Require viewing at least 6 out of 6 sections
+      let hasRecordedCompletionTime = false; // Add this flag
+      
+      // Disable Next View button and Submit button initially
+      document.getElementById('nextViewBtn').disabled = true;
+      document.getElementById('nextViewBtn').title = "Please view the whole scene to proceed";
+      const submitBtn = document.getElementById('submitBtn');
+      submitBtn.disabled = true;
+      const feedbackDiv = document.querySelector(".feedback-text");
+      if (feedbackDiv) {
+        feedbackDiv.textContent = "Please view the whole scene first.";
+        feedbackDiv.className = "feedback-text feedback-incorrect";
+      }
+
+      // Create circular progress indicator
+      const progressCircle = document.createElement('div');
+      progressCircle.style.position = 'absolute';
+      progressCircle.style.bottom = '20px';
+      progressCircle.style.left = '20px';  // Changed from right to left
+      progressCircle.style.width = '60px';
+      progressCircle.style.height = '60px';
+      progressCircle.style.backgroundColor = 'rgba(0,0,0,0.7)';
+      progressCircle.style.borderRadius = '50%';
+      progressCircle.style.padding = '5px';
+      container.appendChild(progressCircle);
+
+      // Create sections
+      for (let i = 0; i < 4; i++) {
+        const section = document.createElement('div');
+        section.className = `section-${i}`;
+        section.style.position = 'absolute';
+        section.style.width = '100%';
+        section.style.height = '100%';
+        section.style.left = '0%';
+        section.style.top = '0';
+        section.style.transformOrigin = '50% 50%';
+        section.style.transform = `rotate(${-i * 90}deg)`;
+        section.style.clipPath = 'polygon(0 0, 100% 0, 50% 50%)';
+        section.style.backgroundColor = 'rgba(255,255,255,0.2)';
+        section.style.transition = 'background-color 0.3s';
+        progressCircle.appendChild(section);
+      }
+
+      // Add center dot
+      const centerDot = document.createElement('div');
+      centerDot.style.position = 'absolute';
+      centerDot.style.width = '10px';
+      centerDot.style.height = '10px';
+      centerDot.style.backgroundColor = 'white';
+      centerDot.style.borderRadius = '50%';
+      centerDot.style.left = '50%';
+      centerDot.style.top = '50%';
+      centerDot.style.transform = 'translate(-50%, -50%)';
+      progressCircle.appendChild(centerDot);
+
+      // Update sections based on viewed angles
+      const updateSections = () => {
+        currentViewedAngles.forEach(section => {
+          const sectionElement = progressCircle.querySelector(`.section-${section}`);
+          if (sectionElement) {
+            sectionElement.style.backgroundColor = 'rgba(40,167,69,0.8)'; // Green color
+          }
+        });
+
+        // Enable Next View button and Submit button, update arrow color if enough sections have been viewed
+        if (currentViewedAngles.size >= requiredSections) {
+          // Record completion time when progress circle is complete, but only once per view
+          if (!hasRecordedCompletionTime) {
+            const completionTime = (Date.now() - progressStartTime);
+            // const completionTime = (Date.now() - progressStartTime) / 1000;
+            progressCompletionTimes.push(completionTime);
+            hasRecordedCompletionTime = true;
+          }
+
+          // Only enable the Next View button if there are more views available
+          if (viewIndex < layouts[currentLayoutIndex].panoramas.length - 1) {
+            document.getElementById('nextViewBtn').disabled = false;
+            document.getElementById('nextViewBtn').title = "You can now proceed to the next view";
+            document.getElementById('nextViewBtn').classList.add('complete');
+            document.getElementById('nextViewBtn').style.backgroundColor = '';
+          } 
+          else {
+            document.getElementById('nextViewBtn').disabled = true;
+            document.getElementById('nextViewBtn').textContent = 'Final View';
+            document.getElementById('nextViewBtn').title = "No more views available";
+            document.getElementById('nextViewBtn').classList.remove('complete', 'disabled-styles');
+            document.getElementById('nextViewBtn').style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
+            document.getElementById('nextViewBtn').style.cursor = 'not-allowed';
+          }  
+
+          // Add revisit button logic
+          if (viewIndex === layouts[currentLayoutIndex].panoramas.length - 1 && !hasRevisited) {
+            const revisitBtn = document.getElementById('revisitBtn');
+            revisitBtn.disabled = false;
+            revisitBtn.classList.add('complete');
+            revisitBtn.title = "€0.30 to review all previously seen views";
+            revisitBtn.style.display = 'block';
+          }
+
+          progressCircle.style.boxShadow = '0 0 10px rgba(40,167,69,0.8)'; // Add glow effect when complete
+          // Enable Submit button and clear message
+          submitBtn.disabled = false;
+          if (feedbackDiv) {
+            feedbackDiv.textContent = "";
+            feedbackDiv.className = "feedback-text";
+          }
+        } 
+        else {
+          // Disable Submit button and show message
+          submitBtn.disabled = true;
+          if (feedbackDiv) {
+            feedbackDiv.textContent = "Please view the whole scene first.";
+            feedbackDiv.className = "feedback-text feedback-incorrect";
+          }
+        }
+      };
+
+      let lastSection = null;
+
+      // Track camera movement using OrbitControls change event
+      const changeHandler = () => {
+        const camera = viewer.getCamera();
+        const longitude = ((camera.rotation.y * (180/Math.PI)) + 360) % 360;
+        const currentSection = Math.floor((longitude + 360) % 360 / 90) % 4;
+
+        // console.log('Current Section:', currentSection);
+        // console.log('Last Section:', lastSection);
+
+        if (currentSection !== lastSection) {
+          logAreaChange(`section${currentSection + 1}`);
+          lastSection = currentSection;
+          // console.log('Updated Last Section to:', lastSection);  // Add this to verify
+        }
+
+        const section = Math.floor(longitude / angleThreshold);
+        currentViewedAngles.add(section);
+        updateSections();
+      };
+
+      // Add the event listener
+      viewer.OrbitControls.addEventListener('change', changeHandler);
+
+      // Clean up function to remove event listeners when switching panoramas
+      const cleanup = () => {
+        viewer.OrbitControls.removeEventListener('change', changeHandler);
+        viewer.dispose();
+        // Reset the right hover trigger
+        document.getElementById('nextViewBtn').classList.remove('complete');
+        document.getElementById('nextViewBtn').disabled = true;
+        document.getElementById('nextViewBtn').title = "Please view the whole scene to proceed";
+        hasRecordedCompletionTime = false; // Reset the flag when cleaning up
+      };
+
+      // Store cleanup function on the container for later use
+      container.cleanup = cleanup;
+    };
+    
+    const trial_combined = {
+      type: jsPsychHtmlButtonResponse,
+      data: {
+        name: "Experiment"
+      },
+      stimulus: `
+        <div style="height: 100vh; display: flex; flex-direction: column; gap: 1vh;">
+          <div class="money-container">
+            <div class="money-display"></div>
+            <button id="nextViewBtn" class="next-view-btn" disabled title="Please view the whole scene to proceed">
+              Next View
+            </button>
+            <button id="revisitBtn" class="next-view-btn" 
+                    style="display: none; margin-top: 10px;" 
+                    title="€0.30 to review all previously seen views">
+              Revisit All Views (€${viewCost.toFixed(2)})
+            </button>
+          </div>
+          <div id="panorama"></div>
+          <div class="hover-trigger"></div>
+          <div class="bottom-section">
+            <div id="layout-container">
+              <p>Select the layout you think is correct:</p>
+              <div class="layout-options-container">
+                <!-- Layout options will be inserted here dynamically -->
+              </div>
+            </div>
+            <div class="potential-bonus-message">
+              If you choose the correct answer, you will earn an extra bonus of €<span class="bonus-amount">${(maxBonus - viewsForBonus * viewCost).toFixed(2)}</span>
+            </div>
+            <div class="feedback-text"></div>
+            <div id="message" class="message-container"></div>
+            <button id="submitBtn">Submit Choice</button>
+            <button id="nextLayoutBtn" style="display: none;">Next Layout</button>
+          </div>
+        </div>
+      `,
+      choices: [], // No choices - we'll use our custom buttons
+      
+      on_load: function() {
+        logAreaChange(`layout-${currentLayoutIndex + 1}-start`); 
+        // Add black background to body when trial starts
+        document.body.classList.add('black-background');
+
+        // Initialize layout start time when the trial loads
+        layoutStartTime = getTimestamp();
+        // Initialize view start time when the trial loads
+        viewStartTime = Date.now();
+        
+        // Initialize money display
+        updateMoneyDisplay();
+
+        // Add event listeners for bottom section and hover trigger interaction
+        const bottomSection = document.querySelector('.bottom-section');
+        const hoverTrigger = document.querySelector('.hover-trigger');
+
+        bottomSection.addEventListener('mouseenter', () => {
+          hoverTrigger.classList.add('hidden');
+          logAreaChange('bottom-section');
+        });
+
+        bottomSection.addEventListener('mouseleave', () => {
+          hoverTrigger.classList.remove('hidden');
+          if (!isTransitioningLayout) {  // Only log if we're not transitioning
+            logAreaChange(null);
+          }
+        });
+
+        document.addEventListener('mousemove', (e) => {
+          const hoverTriggerRect = hoverTrigger.getBoundingClientRect();
+          const isHovering = e.clientY >= hoverTriggerRect.top && 
+                            e.clientX >= hoverTriggerRect.left && 
+                            e.clientX <= hoverTriggerRect.right;
+
+          if (isHovering || bottomSection.matches(':hover')) {
+            bottomSection.classList.add('visible');
+            hoverTrigger.classList.add('hidden');
+          } else {
+            bottomSection.classList.remove('visible');
+            hoverTrigger.classList.remove('hidden');
+          }
+        })
+
+        // Add visibility check on page load and after transitions
+        const checkHoverTriggerVisibility = () => {
+          const bottomSectionRect = bottomSection.getBoundingClientRect();
+          const hoverTriggerRect = hoverTrigger.getBoundingClientRect();
+          
+          if (bottomSectionRect.top < window.innerHeight) {
+            hoverTrigger.classList.add('hidden');
+          } else {
+            hoverTrigger.classList.remove('hidden');
+          }
+        };
+
+        // Check visibility on page load
+        checkHoverTriggerVisibility();
+
+        // Check visibility after bottom section transitions
+        bottomSection.addEventListener('transitionend', checkHoverTriggerVisibility);
+
+        // Initialize panorama
+        const panoDiv = document.getElementById('panorama');
+        renderPanorama(layouts[currentLayoutIndex].panoramas[viewIndex], panoDiv);
+
+        // Update layout options
+        const layoutOptionsContainer = document.querySelector('.layout-options-container');
+        layoutOptionsContainer.innerHTML = layouts[currentLayoutIndex].options.map((option, index) => {
+          const choice = String.fromCharCode(65 + index); // Convert 0,1,2 to A,B,C
+          return `
+            <div class="layout-option">
+              <img src="${option}" class="layout-img" data-choice="${choice}" />
+              <div class="layout-label">${choice}</div>
+            </div>
+          `;
+        }).join('');
+
+        // Setup layout selection
+        let selectedLayout = null;
+        document.querySelectorAll(".layout-img").forEach(img => {
+          img.addEventListener("click", function () {
+            // Hide confirmation message if it's showing
+            const messageDiv = document.getElementById('message');
+            messageDiv.style.display = "none";
+            messageDiv.innerHTML = ''; // Clear the confidence container completely
+            
+            // Hide the "Please select a layout first" message
+            const feedbackDiv = document.querySelector(".feedback-text");
+            if (feedbackDiv.textContent === "Please select a layout first.") {
+              feedbackDiv.textContent = "";
+              feedbackDiv.className = "feedback-text";
+            }
+            
+            document.querySelectorAll(".layout-img").forEach(i => {
+              i.classList.remove('selected');
+            });
+            this.classList.add('selected');
+            selectedLayout = this.getAttribute("data-choice");
+          });
+        });
+
+        // Add click handler for the right hover trigger
+        const nextView = document.getElementById('nextViewBtn');
+        nextView.addEventListener('click', function() {
+          logAreaChange('New-View')
+          // Check if the trigger has the complete class (added when progress is done)
+          if (nextView.classList.contains('complete')) {
+            // Hide confirmation message if it's showing
+            document.getElementById('message').style.display = "none";
+            
+            if (viewIndex < layouts[currentLayoutIndex].panoramas.length - 1) {
+              // Record duration of current view
+              const viewDuration = (Date.now() - viewStartTime);
+              // const viewDuration = (Date.now() - viewStartTime) / 1000;
+              viewDurations.push(viewDuration);
+              
+              viewIndex++;
+              totalViewsViewed++;
+              // Only increment viewsTaken if not in revisit phase
+              if (!isRevisitPhase && viewIndex >= 2) {
+                viewsForBonus++;
+              }
+                
+              // Clean up the previous panorama before rendering the new one
+              const panoDiv = document.getElementById('panorama');
+              if (panoDiv.cleanup) {
+                panoDiv.cleanup();
+              }
+                
+              renderPanorama(layouts[currentLayoutIndex].panoramas[viewIndex], panoDiv);
+              updateMoneyDisplay();
+
+              // Reset progress tracking for new view
+              progressStartTime = Date.now();
+
+              // Update the bonus amount in the bottom section
+              const bonusAmount = document.querySelector('.bonus-amount');
+              if (bonusAmount) {
+                bonusAmount.textContent = (maxBonus - viewsForBonus * viewCost).toFixed(2);
+              }
+
+              // Reset buttons to initial state
+              const confirmBtn = document.getElementById('confirmBtn');
+              if (confirmBtn) {
+                confirmBtn.remove();
+              }
+              submitBtn.style.display = 'block';
+              submitBtn.disabled = true;  // Keep submit button disabled until progress is complete
+              const feedbackDiv = document.querySelector(".feedback-text");
+              if (feedbackDiv) {
+                feedbackDiv.textContent = "Please view the whole scene first.";
+                feedbackDiv.className = "feedback-text feedback-incorrect";
+              }
+
+              // Deselect any selected layout and confidence options
+              document.querySelectorAll(".layout-img").forEach(img => {
+                img.classList.remove('selected');
+              });
+              document.querySelectorAll(".confidence-option").forEach(opt => {
+                opt.classList.remove('selected');
+              });
+            
+              // Start timing new view
+              viewStartTime = Date.now();
+            }
+          }
+        });
+
+        document.getElementById('revisitBtn').addEventListener('click', function() {
+          if (!hasRevisited) {
+            // Deduct fee once
+            viewsForBonus++;
+            updateMoneyDisplay();
+            hasRevisited = true;
+            isRevisitPhase = true;
+
+            totalViewsViewed ++;
+            
+            // Reset view index
+            viewIndex = 0;
+            
+            // Clean up panorama
+            const panoDiv = document.getElementById('panorama');
+            if (panoDiv.cleanup) panoDiv.cleanup();
+
+            this.style.display = 'none';
+            
+            // Render first view again
+            renderPanorama(layouts[currentLayoutIndex].panoramas[viewIndex], panoDiv);
+            
+            // Enable next view button
+            document.getElementById('nextViewBtn').disabled = false;
+            nextViewBtn.style.cursor = 'not-allowed';
+            document.getElementById('nextViewBtn').textContent = 'Next View (Free)';
+          }
+        });
+
+        // Add click handlers to layout images
+        document.querySelectorAll(".layout-img").forEach(img => {
+          img.addEventListener("click", function () {
+            const choice = this.dataset.choice;
+            logActionInArea(`${choice}`);
+            // Hide confirmation message if it's showing
+            const messageDiv = document.getElementById('message');
+            messageDiv.style.display = "none";
+            messageDiv.innerHTML = ''; // Clear the confidence container completely
+            
+            // Hide the "Please select a layout first" message
+            const feedbackDiv = document.querySelector(".feedback-text");
+            if (feedbackDiv.textContent === "Please select a layout first.") {
+              feedbackDiv.textContent = "";
+              feedbackDiv.className = "feedback-text";
+            }
+            
+            // Reset buttons to initial state
+            const confirmBtn = document.getElementById('confirmBtn');
+            if (confirmBtn) {
+              confirmBtn.remove();
+            }
+            submitBtn.style.display = 'block';
+            
+            // Only enable submit button if progress is complete
+            if (currentViewedAngles.size >= requiredSections) {
+              submitBtn.disabled = false;
+              if (feedbackDiv) {
+                feedbackDiv.textContent = "";
+                feedbackDiv.className = "feedback-text";
+              }
+            } else {
+              submitBtn.disabled = true;
+              if (feedbackDiv) {
+                feedbackDiv.textContent = "Please view the whole scene first.";
+                feedbackDiv.className = "feedback-text feedback-incorrect";
+              }
+            }
+
+            // Reset confidence selection
+            document.querySelectorAll(".confidence-option").forEach(opt => {
+              opt.classList.remove('selected');
+            });
+            
+            document.querySelectorAll(".layout-img").forEach(i => {
+              i.classList.remove('selected');
+            });
+            this.classList.add('selected');
+          });
+        });
+
+        // Modify Submit button handler
+        document.getElementById('submitBtn').addEventListener('click', () => {
+          logActionInArea(`submitBtn`);
+          const selectedLayout = document.querySelector(".layout-img.selected")?.getAttribute("data-choice");
+          const messageDiv = document.getElementById('message');
+          const feedbackDiv = document.querySelector(".feedback-text");
+          const currentLayout = layouts[currentLayoutIndex];
+          
+          if (!selectedLayout) {
+            feedbackDiv.textContent = "Please select a layout first.";
+            feedbackDiv.className = "feedback-text feedback-incorrect";
+            return;
+          }
+
+          // Check if confidence is already selected
+          const confidenceContainer = messageDiv.querySelector('.confidence-container');
+          const selectedConfidence = messageDiv.querySelector('.confidence-option.selected')?.dataset.value;
+          
+          if (confidenceContainer && !selectedConfidence) {
+            confidenceContainer.classList.add('shake');
+            setTimeout(() => {
+              confidenceContainer.classList.remove('shake');
+            }, 500);
+            return;
+          }
+
+          // Show confidence scale if not already shown
+          if (!confidenceContainer) {
+            messageDiv.innerHTML = `
+              <div class="confidence-container">
+                <p>How confident are you in the answer?</p>
+                <div class="confidence-options">
+                  <div class="confidence-option" data-value="1">
+                    <div class="check-circle"></div>
+                    <span class="option-text">Not confident at all <br>(0–20%)</span>
+                  </div>
+                  <div class="confidence-option" data-value="2">
+                    <div class="check-circle"></div>
+                    <span class="option-text">Slightly confident <br>(21–40%)</span>
+                  </div>
+                  <div class="confidence-option" data-value="3">
+                    <div class="check-circle"></div>
+                    <span class="option-text">Somewhat confident <br>(41–60%)</span>
+                  </div>
+                  <div class="confidence-option" data-value="4">
+                    <div class="check-circle"></div>
+                    <span class="option-text">Very confident <br>(61–80%)</span>
+                  </div>
+                  <div class="confidence-option" data-value="5">
+                    <div class="check-circle"></div>
+                    <span class="option-text">Completely confident <br>(81–100%)</span>
+                  </div>
+                </div>
+              </div>
+            `;
+            messageDiv.className = "message-container";
+            messageDiv.style.display = "block";
+
+            // Add click handlers for confidence options
+            const confidenceOptions = messageDiv.querySelectorAll('.confidence-option');
+            const submitBtn = document.getElementById('submitBtn');
+          
+            confidenceOptions.forEach(option => {
+              option.addEventListener('click', () => {
+                logActionInArea(`${option.dataset.value}`);
+                confidenceOptions.forEach(opt => opt.classList.remove('selected'));
+                option.classList.add('selected');
+                
+                // Hide submit button and show confirm button
+                submitBtn.style.display = 'none';
+                // Remove existing confirm button if it exists
+                const existingConfirmBtn = document.getElementById('confirmBtn');
+                if (existingConfirmBtn) {
+                  existingConfirmBtn.remove();
+                }
+                const confirmBtn = document.createElement('button');
+                confirmBtn.id = 'confirmBtn';
+                confirmBtn.className = 'confirm-btn';
+                confirmBtn.textContent = 'Confirm Submission';
+                confirmBtn.style.margin = submitBtn.style.margin;  // Match margin only
+                submitBtn.parentNode.insertBefore(confirmBtn, submitBtn.nextSibling);
+                
+                // Add click handler for confirm button
+                confirmBtn.onclick = () => {
+                  logActionInArea(`confirmBtn`);
+                  // Hide confirm button and show next layout button
+                  confirmBtn.style.display = 'none';
+                  const nextLayoutBtn = document.getElementById('nextLayoutBtn');
+                  nextLayoutBtn.style.display = 'block';
+                  
+                  // Disable the Next View button and right hover trigger when showing Next Layout button
+                  document.getElementById('nextViewBtn').disabled = true;
+                  document.getElementById('nextViewBtn').title = "Choice submitted - cannot view other scenes";
+                  document.getElementById('nextViewBtn').style.pointerEvents = 'none';
+                  document.getElementById('nextViewBtn').style.opacity = '0.5';
+                  
+                  // Fix the bottom section in place
+                  document.querySelector('.bottom-section').classList.add('fixed');
+                      
+                  // Record duration of final view
+                  const finalViewDuration = (Date.now() - viewStartTime);
+                  // const finalViewDuration = (Date.now() - viewStartTime) / 1000;
+                  viewDurations.push(finalViewDuration);
+
+                  // Record data for this layout
+                  const layoutResult = {
+                    participant_id: subject_id,
+                    // layoutIndex: currentLayoutIndex + 1,
+                    layoutIndex: currentLayout.originalIndex + 1,
+                    layoutName: currentLayout.name,
+                    conditionIndex: currentLayout.conditionIndex,
+                    startTimestamp: layoutStartTime,
+                    endTimestamp: getTimestamp(),
+                    viewCount: totalViewsViewed,
+                    // viewDurations: viewDurations,
+                    viewDurations: viewDurations.join(';'),
+                    progressCompletionTimes: progressCompletionTimes.join(';'), // Add this line
+                    totalTimeSpent: viewDurations.reduce((a, b) => a + b, 0),
+                    selectedChoice: selectedLayout,
+                    correctChoice: currentLayout.correctAnswer,
+                    isCorrect: selectedLayout === currentLayout.correctAnswer,
+                    confidence: parseInt(option.dataset.value),
+                    earnedBonus: selectedLayout === currentLayout.correctAnswer ? (currentLayout.maxBonus - viewsForBonus * viewCost) : 0,
+                    revisited: hasRevisited,
+                  };
+                  layoutData.push(layoutResult);
+
+                  // Hide confirmation message
+                  messageDiv.style.display = "none";
+                  messageDiv.innerHTML = ''; // Clear the confidence container completely
+
+                  // Hide the bonus message
+                  const bonusMessage = document.querySelector('.potential-bonus-message');
+                  if (bonusMessage) {
+                    bonusMessage.style.display = 'none';
+                  }
+
+                  // Disable further selections
+                  document.querySelectorAll(".layout-img").forEach(img => {
+                    img.style.pointerEvents = "none";
+                  });
+
+                  const isCorrect = selectedLayout === currentLayout.correctAnswer;
+                  const earnedBonus = isCorrect ? (currentLayout.maxBonus - viewsForBonus * viewCost) : 0;
+                  totalEarned += earnedBonus;
+
+                  // Show feedback
+                  if (isCorrect) {
+                    feedbackDiv.innerHTML = `<span class="feedback-correct">Correct! Well done!</span><br><br><span>Your total earned money is €${totalEarned.toFixed(2)}</span>`;
+                    feedbackDiv.className = "feedback-text";
+                    document.querySelector(`.layout-img[data-choice="${selectedLayout}"]`).classList.add("correct");
+                  } 
+                  else {
+                    feedbackDiv.innerHTML = `<span class="feedback-incorrect">Incorrect. The correct layout is ${currentLayout.correctAnswer}.</span><br><br><span>Your total earned money is €${totalEarned.toFixed(2)}</span>`;
+                    feedbackDiv.className = "feedback-text";
+                    document.querySelector(`.layout-img[data-choice="${selectedLayout}"]`).classList.add("incorrect");
+                    document.querySelector(`.layout-img[data-choice="${currentLayout.correctAnswer}"]`).classList.add("correct");
+                  }
+
+                  // Update money display with zero potential bonus
+                  const moneyDisplay = document.querySelector('.money-display');
+                  moneyDisplay.innerHTML = `
+                    <div class="money-item">
+                      <span class="money-label">Earned Money: </span>
+                      <span class="money-value">€${totalEarned.toFixed(2)}</span>
+                    </div>
+                    <div class="money-item">
+                      <span class="money-label">Potential Bonus: </span>
+                      <span class="money-value bonus-value">+€0.00</span>
+                    </div>
+                  `;
+
+                  // Show next layout button if there are more layouts
+                  if (currentLayoutIndex < layouts.length - 1) {
+                    nextLayoutBtn.textContent = 'Next Layout';
+                    nextLayoutBtn.onclick = () => {
+                      logAreaChange('between-layouts');
+                      isTransitioningLayout = true;
+
+                      // Reset revisit state
+                      hasRevisited = false;
+                      isRevisitPhase = false;
+                        
+                      // Restore original buttons
+                      document.getElementById('nextViewBtn').style.display = 'block';
+                      document.getElementById('revisitBtn').style.display = 'none';
+
+                      currentLayoutIndex++;
+                      viewIndex = 0;
+                      viewsForBonus = 0;
+                      totalViewsViewed = 1;
+                      
+                      // lastSection = 10;
+                          
+                      // Clean up the previous panorama
+                      const panoDiv = document.getElementById('panorama');
+                      if (panoDiv.cleanup) {
+                        panoDiv.cleanup();
+                      }
+                      
+                      // Then log entry to new layout
+                      logAreaChange(`layout-${currentLayoutIndex + 1}-start`);
+
+                      // Reset the trial for the next layout
+                      document.getElementById('submitBtn').style.display = 'block';
+                      document.getElementById('submitBtn').disabled = false;
+                      document.getElementById('nextViewBtn').disabled = true;
+                      document.getElementById('nextViewBtn').textContent = 'Next View'
+                      document.getElementById('nextViewBtn').title = "Please view the whole scene to proceed";
+                      nextViewBtn.classList.remove('complete');
+                      nextViewBtn.style.backgroundColor = '';  // Reset to default
+                      nextViewBtn.style.cursor = ''; 
+                      
+                      // Restore the right hover trigger to normal state
+                      const nextView = document.getElementById('nextViewBtn');
+                      nextView.style.pointerEvents = 'auto';
+                      nextView.style.opacity = '1';
+                      nextView.classList.remove('complete');
+                      
+                      // Remove fixed class from bottom section to restore normal behavior
+                      const bottomSection = document.querySelector('.bottom-section');
+                      bottomSection.classList.remove('fixed');
+                      bottomSection.style.transition = 'none';  // Disable transition temporarily
+                      // bottomSection.style.bottom = '-100%';  // Force collapse
+                      bottomSection.classList.remove('visible');
+                          
+                      // Reset the hover behavior after a short delay (after transition)
+                      setTimeout(() => {
+                        isTransitioningLayout = false;
+                        bottomSection.style.bottom = '';  // Remove inline style to restore CSS transitions
+                        
+                        bottomSection.style.transition = 'bottom 0.3s ease-in-out';  // Restore original transition
+
+                        // Show and reset the hover trigger
+                        const hoverTrigger = document.querySelector('.hover-trigger');
+                        hoverTrigger.style.display = 'flex';
+                        hoverTrigger.classList.remove('hidden');
+
+                        // Re-add hover event listeners
+                        hoverTrigger.addEventListener('mouseenter', () => {
+                            // bottomSection.style.bottom = '0';
+                            bottomSection.classList.add('visible');
+                        });
+                        
+                        bottomSection.addEventListener('mouseleave', () => {
+                            // bottomSection.style.bottom = '-100%';
+                            bottomSection.classList.remove('visible');
+                            // logAreaChange('exit-bottom-section2'); // Will log exit from bottom-section
+                        });
+                      }, 30);  // Delay matches the CSS transition time
+
+                      document.querySelector(".feedback-text").textContent = "";
+                      document.querySelectorAll(".layout-img").forEach(img => {
+                        img.style.pointerEvents = "auto";
+                        img.classList.remove("selected", "correct", "incorrect");
+                      });
+                      
+                      // Update panorama and layout options for the new layout
+                      renderPanorama(layouts[currentLayoutIndex].panoramas[0], document.getElementById('panorama'));
+                      
+                      // Update layout options for new layout
+                      const layoutOptionsContainer = document.querySelector('.layout-options-container');
+                      layoutOptionsContainer.innerHTML = layouts[currentLayoutIndex].options.map((option, index) => {
+                        const choice = String.fromCharCode(65 + index); // Convert 0,1,2 to A,B,C
+                        return `
+                          <div class="layout-option">
+                            <img src="${option}" class="layout-img" data-choice="${choice}" />
+                            <div class="layout-label">${choice}</div>
+                          </div>
+                        `;
+                      }).join('');
+                      
+                      // Show the bonus message again for the new layout
+                      const bonusMessage = document.querySelector('.potential-bonus-message');
+                      if (bonusMessage) {
+                        bonusMessage.style.display = 'block';
+                        // Update the bonus amount to match the current potential bonus
+                        const bonusAmount = bonusMessage.querySelector('.bonus-amount');
+                        if (bonusAmount) {
+                          bonusAmount.textContent = (maxBonus - viewsForBonus * viewCost).toFixed(2);
+                        }
+                      }
+                      
+                      // Re-attach click handlers to new layout images
+                      document.querySelectorAll(".layout-img").forEach(img => {
+                        img.addEventListener("click", function () {
+                          const choice = this.dataset.choice;
+                          logActionInArea(`${choice}`);
+                          // Hide confirmation message if it's showing
+                          const messageDiv = document.getElementById('message');
+                          messageDiv.style.display = "none";
+                          messageDiv.innerHTML = ''; // Clear the confidence container completely
+                          
+                          // Hide the "Please select a layout first" message
+                          const feedbackDiv = document.querySelector(".feedback-text");
+                          if (feedbackDiv.textContent === "Please select a layout first.") {
+                            feedbackDiv.textContent = "";
+                            feedbackDiv.className = "feedback-text";
+                          }
+
+                          // Reset buttons to initial state
+                          const confirmBtn = document.getElementById('confirmBtn');
+                          if (confirmBtn) {
+                            confirmBtn.remove();
+                          }
+                          const submitBtn = document.getElementById('submitBtn');
+                          submitBtn.style.display = 'block';
+                              
+                          document.querySelectorAll(".layout-img").forEach(i => {
+                            i.classList.remove('selected');
+                          });
+                          this.classList.add('selected');
+                        });
+                      });
+                      
+                      // Update money display to show accumulated earnings and new potential bonus
+                      updateMoneyDisplay();
+                      
+                      // Hide the next layout button
+                      nextLayoutBtn.style.display = 'none';
+
+                      // When moving to next layout or finishing, reset the timing variables
+                      viewDurations = [];
+                      progressCompletionTimes = [];
+                      viewStartTime = Date.now();
+                    };
+                  }
+                  else {
+                    nextLayoutBtn.textContent = 'Finish Experiment';
+                    nextLayoutBtn.onclick = () => {
+                      // Log final transition
+                      logAreaChange('experiment-end');
+
+                      jsPsych.finishTrial();
+                    };
+                  };
+                }
+              });
+            });
+          };
+        });
+      },
+
+      on_finish: function(data) {
+        // Remove black background from body when trial ends
+        document.body.classList.remove('black-background');
+        // // Add the layout data only to this trial's data
+        data.totalEarned = totalEarned;
+      }
+    };
+    timeline.push(trial_combined);
+
+    // After your last trial (after trial_combined), add the save data trial:
+    const save_data = saveData(filename, () => {
+      // Get all data
+      const allData = jsPsych.data.get().values();
+      
+      // Filter and map the data to only include the fields we want
+      const filteredData = allData.map(trial => ({
+        participant_id: trial.subject_id,
+        experiment_key: experimentKey,
+        name: trial.name,
+        trial_index: trial.trial_index,
+        rt: trial.rt,
+        response: trial.response,
+        trial_type: trial.trial_type,
+        end_time: trial.end_time,
+        time_elapsed: trial.time_elapsed,
+        totalEarned: trial.totalEarned
+      }));
+
+      const headers = Object.keys(filteredData[0]).join(',');
+      const rows = filteredData.map(row => Object.values(row).join(','));
+      return [headers, ...rows].join('\n');
+    });
+
+    const save_tutorial_data = saveData(`tutorial_${filename}`, () => {
+      const headers = [
+        "tutorial_participant_id",
+        "tutorial_layout_index",
+        "tutorial_start_time",
+        "tutorial_end_time",
+        "tutorial_view_count",
+        "tutorial_total_time",
+        "tutorial_view_durations",
+        "tutorial_progress_times",
+        "tutorial_selected_choice",
+        "tutorial_correct_choice",
+        "tutorial_is_correct",
+        "tutorial_confidence",
+        "tutorial_earned_bonus"
+      ].join(",");
+
+      const rows = tutorialLayoutData.map(layout => [
+        layout.tutorial_participant_id,
+        layout.tutorial_layout_index,
+        layout.tutorial_start_time,
+        layout.tutorial_end_time,
+        layout.tutorial_view_count,
+        layout.tutorial_total_time,
+        layout.tutorial_view_durations,
+        layout.tutorial_progress_times,
+        layout.tutorial_selected_choice,
+        layout.tutorial_correct_choice,
+        layout.tutorial_is_correct,
+        layout.tutorial_confidence,
+        layout.tutorial_earned_bonus
+      ].join(","));
+
+      return [headers, ...rows].join("\n");
+    });
+
+    const save_layout_data = saveData(`layouts_${filename}`, () => {
+      const headers = [
+        "participant_id",
+        "experiment_key",
+        "layoutIndex",
+        "layout_name",
+        "condition_index",
+        "startTimestamp",
+        "endTimestamp",
+        "viewCount",
+        "totalTimeSpent",
+        "viewDurations",
+        "progressCompletionTimes",
+        "selectedChoice",
+        "correctChoice",
+        "isCorrect",
+        "confidence",
+        "earnedBonus",
+        "Revisited_views"
+      ].join(",");
+
+      const rows = layoutData.map(layout => [
+        layout.participant_id,
+        experimentKey,
+        layout.layoutIndex,
+        layout.layoutName,
+        layout.conditionIndex,
+        layout.startTimestamp,
+        layout.endTimestamp,
+        layout.viewCount,
+        layout.totalTimeSpent,
+        layout.viewDurations,
+        layout.progressCompletionTimes,
+        layout.selectedChoice,
+        layout.correctChoice,
+        layout.isCorrect,
+        layout.confidence,
+        layout.earnedBonus,
+        layout.revisited
+      ].join(","));
+
+      const csv = [headers, ...rows].join("\n");
+      return csv;
+    });
+
+    const logAreaChange = (newArea) => {
+      const now = Date.now();
+      
+      if (currentArea !== null) {
+        // Record exit from previous area
+        logData.push({
+          participant_id: subject_id,
+          experiment_key: experimentKey,
+          // layoutIndex: currentLayoutIndex + 1,
+          layoutIndex: layouts[currentLayoutIndex].originalIndex + 1,
+          layout_name: layouts[currentLayoutIndex].name,
+          condition_index: layouts[currentLayoutIndex].conditionIndex,
+          view_index: viewIndex + 1,
+          event: currentArea,
+          event_timestamp: new Date(areaStartTime).toISOString(),
+          duration: (now - areaStartTime),
+          // duration: (now - areaStartTime) / 1000,
+          action_detail:  [...currentActionDetails]
+        });
+        currentActionDetails = [];
+      }
+
+      // Start new area
+      currentArea = newArea;
+      areaStartTime = now;
+    };
+
+    const logActionInArea = (actionDetail) => {
+      if (currentArea !== null) {
+      currentActionDetails.push(actionDetail);
+      }
+    };
+
+    const save_log_data = saveData(`logs_${filename}`, () => {
+      const headers = [
+        "participant_id",
+        "experiment_key",
+        "layoutIndex",
+        "layout_name",
+        "condition_index",
+        "view_index",
+        "event",
+        "event_timestamp",
+        "duration",
+        "action_detail"
+      ].join(",");
+
+      const rows = logData.map(entry => [
+        entry.participant_id,
+        experimentKey,
+        entry.layoutIndex,
+        entry.layout_name,
+        entry.condition_index,
+        entry.view_index,
+        entry.event,
+        entry.event_timestamp,
+        entry.duration.toFixed(3),
+        entry.action_detail.join(";")
+        // JSON.stringify(entry.action_detail)
+      ].join(","));
+
+      return [headers, ...rows].join("\n");
+    });
+
+    // Add to timeline
+    timeline.push(save_data);
+    timeline.push(save_PTT_data);
+    timeline.push(save_tutorial_data);
+    timeline.push(save_layout_data);
+    timeline.push(save_log_data);
+
+    const debrief_block = {
+      type: jsPsychHtmlKeyboardResponse,
+      stimulus: function () {
+        // Replace this with your actual Prolific completion URL
+        const prolificURL = "https://app.prolific.co/submissions/complete?cc=XXXXXXX";
+        
+        return `
+          <div class="welcome-message">
+            <h2>Thank you!</h2>
+            <p>Total earned: <strong>€${totalEarned.toFixed(2)}</strong></p>
+            <p>You will be redirected back to Prolific in <span id="countdown">10</span> seconds.</p>
+            <p style="margin-top: 20px; font-size: 0.9em;">
+              If you are not redirected automatically, please click or copy this link:<br>
+              <a href="${prolificURL}" style="color: #007bff; text-decoration: underline;">${prolificURL}</a>
+            </p>
+          </div>
+        `;
+      },
+      on_load: function() {
+        let timeLeft = 10;
+        const countdownElement = document.getElementById('countdown');
+        
+        const countdown = setInterval(function() {
+          timeLeft--;
+          countdownElement.textContent = timeLeft;
+          
+          if (timeLeft <= 0) {
+            clearInterval(countdown);
+            window.location.href = "https://app.prolific.co/submissions/complete?cc=XXXXXXX";
+          }
+        }, 1000);
+      },
+      choices: "NO_KEYS"
+    };
+    timeline.push(debrief_block);
+
+    /* start the experiment */
+    jsPsych.run(timeline);
+
+  </script>
+</body>
+</html>
