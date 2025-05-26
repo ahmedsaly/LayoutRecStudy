@@ -1435,6 +1435,11 @@
       viewer.OrbitControls.enableZoom = false; // Disable all zoom
       viewer.OrbitControls.enablePan = false;
 
+      viewer.OrbitControls.touches = {
+        ONE: -1, // invalid input to block it
+        TWO: -1
+      };
+
       // Add touch-action CSS
       viewer.container.style.touchAction = 'none';
 
@@ -1448,6 +1453,9 @@
 
       // Remove any existing touch controls configuration
       delete viewer.OrbitControls.touches;
+
+      console.log('OrbitControls config:', viewer.OrbitControls);
+
 
       tut_progressStartTime = Date.now(); // Reset progress start time for new view
 
