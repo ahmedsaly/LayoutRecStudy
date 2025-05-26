@@ -1432,29 +1432,21 @@
       });
       viewer.add(pano);
 
-      // viewer.OrbitControls.touches = {
-      //   ONE: null,
-      //   TWO: null
-      // };
+      viewer.OrbitControls.enableZoom = false; // Disable all zoom
 
-      // viewer.OrbitControls.touches = {
-      //   ONE: '',  // Disable 1-finger touch rotation
-      //   TWO: ''   // Disable 2-finger pinch zoom
-      // };
+      // Add touch-action CSS
+      viewer.container.style.touchAction = 'none';
 
-      // viewer.OrbitControls.enabled = false;
-      // viewer.OrbitControls.enableZoom = false;
-      // viewer.OrbitControls.enablePan = true;
-      // viewer.OrbitControls.enableRotate = true;
-
-
-      ['touch', 'touchstart', 'touchmove', 'touchend', 'gesturestart', 'gesturechange', 'gestureend'].forEach(evt => {
-        container.addEventListener(evt, e => {
+      // Block all touch events
+      ['touchstart', 'touchmove', 'touchend'].forEach(evt => {
+        viewer.container.addEventListener(evt, e => {
           e.preventDefault();
           e.stopPropagation();
         }, { passive: false });
       });
 
+      // Remove any existing touch controls configuration
+      delete viewer.OrbitControls.touches;
 
       tut_progressStartTime = Date.now(); // Reset progress start time for new view
 
