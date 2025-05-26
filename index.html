@@ -1442,8 +1442,9 @@
       //   TWO: ''   // Disable 2-finger pinch zoom
       // };
 
+      viewer.OrbitControls.enabled = false;
       viewer.OrbitControls.enableZoom = false;
-      // viewer.OrbitControls.enablePan = false;
+      viewer.OrbitControls.enablePan = true;
 
       // ['touchstart', 'touchmove', 'touchend', 'gesturestart', 'gesturechange', 'gestureend'].forEach(evt => {
       //   container.addEventListener(evt, e => {
