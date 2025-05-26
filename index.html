@@ -618,8 +618,8 @@
 
     // Get experiment key from URL (1-5)
     const urlParams = new URLSearchParams(window.location.search);
-    const experimentKey = parseInt(urlParams.get('exp')) || 1;
-    const subject_id = urlParams.get('id') || 789;
+    const experimentKey = parseInt(urlParams.get('exp'));
+    const subject_id = urlParams.get('id');
 
     if (!subject_id || !experimentKey) {
       // Not coming from Prolific – block access
