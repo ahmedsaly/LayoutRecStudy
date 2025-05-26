@@ -618,8 +618,15 @@
 
     // Get experiment key from URL (1-5)
     const urlParams = new URLSearchParams(window.location.search);
-    const experimentKey = parseInt(urlParams.get('exp')) || 1;
-    const subject_id = urlParams.get('id') || "123";
+    const experimentKey = parseInt(urlParams.get('exp'));
+    const subject_id = urlParams.get('id');
+
+    if (!subject_id || !experimentKey) {
+    // Not coming from Prolific – block access
+    // document.write("<h2 style='color:red; text-align:center;'>Access denied. Please access this experiment through Prolific.</h2>");
+    alert("Invalid Access");
+    window.location.href = "/error-page.html";
+    }
 
     const requiredSections = 4; 
     const getTimestamp = () => new Date().toISOString();
