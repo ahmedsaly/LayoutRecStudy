@@ -7,6 +7,23 @@
 
    <!-- jsPsych and Plugins -->
   <link rel="stylesheet" href="https://unpkg.com/jspsych@8.2.1/css/jspsych.css" />
+  <script>
+    // Block right-click menu
+    document.addEventListener("contextmenu", (e) => e.preventDefault());
+  
+    // Block common DevTools shortcuts
+    document.addEventListener("keydown", (e) => {
+      // Block F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+Shift+C
+      if (
+        e.key === "F12" ||
+        (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "J" || e.key === "C")) ||
+        (e.metaKey && e.altKey && e.key === "C") // Mac: Cmd+Option+C
+      ) {
+        e.preventDefault();
+        alert("Not Allowed!!");
+      }
+    });
+  </script>
   <script src="https://unpkg.com/jspsych@8.2.1"></script>
   <script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response@2.1.0"></script>
   <script src="https://unpkg.com/@jspsych/plugin-image-keyboard-response@2.1.0"></script>
@@ -1300,7 +1317,7 @@
         stimulus: `
           <div class="test-message">
           <h2>2. Layout Recognition</h2>
-          <p>In this part, you will be explore 360° panoramic views of 5 different building layouts. 
+          <p>In this part, you will explore 360° panoramic views of 5 different building layouts. 
           You can explore each 360° view by clicking and dragging with your mouse or using the arrow keys.</p>
           <p>After exploring the views, you will need to choose the layout that best matches what you've seen.</p>
           <p><strong>Your base payment is guaranteed</strong>, but you can earn <strong>bonus money</strong> by making correct choices while using fewer views.</p>
@@ -1491,12 +1508,12 @@
       
       // Disable Next View button and Submit button initially
       document.getElementById('nextViewBtn').disabled = true;
-      document.getElementById('nextViewBtn').title = "Please view the whole scene to proceed";
+      document.getElementById('nextViewBtn').title = "Turn around and view the entire scene to enable the Next button";
       const submitBtn = document.getElementById('submitBtn');
       submitBtn.disabled = true;
       const feedbackDiv = document.querySelector(".feedback-text");
       if (feedbackDiv) {
-        feedbackDiv.textContent = "Please view the whole scene first.";
+        feedbackDiv.textContent = "Turn around 360° to explore the entire scene first.";
         feedbackDiv.className = "feedback-text feedback-incorrect";
       }
 
@@ -1585,7 +1602,7 @@
           // Disable Submit button and show message
           submitBtn.disabled = true;
           if (feedbackDiv) {
-            feedbackDiv.textContent = "Please view the whole scene first.";
+            feedbackDiv.textContent = "Turn around 360° to explore the entire scene first.";
             feedbackDiv.className = "feedback-text feedback-incorrect";
           }
         }
@@ -1618,7 +1635,7 @@
         // Reset the right hover trigger
         document.getElementById('nextViewBtn').classList.remove('complete');
         document.getElementById('nextViewBtn').disabled = true;
-        document.getElementById('nextViewBtn').title = "Please view the whole scene to proceed";
+        document.getElementById('nextViewBtn').title = "Turn around and view the entire scene to enable the Next button";
         hasRecordedCompletionTime = false; // Reset the flag when cleaning up
       };
 
@@ -1644,7 +1661,7 @@
                 <span style="color: rgba(255, 255, 255, 0.9); font-size: 1.2em;">+€€</span>
               </div>
             </div>
-            <button id="nextViewBtn" class="next-view-btn" disabled title="Please view the whole scene to proceed">
+            <button id="nextViewBtn" class="next-view-btn" disabled title="Turn around and view the entire scene to enable the Next button">
               Next View
             </button>
           </div>
@@ -1838,7 +1855,7 @@
           </div>
           <div class="money-container">
             <div class="money-display"></div>
-            <button id="nextViewBtn" class="next-view-btn" disabled title="Please view the whole scene to proceed">
+            <button id="nextViewBtn" class="next-view-btn" disabled title="Turn around and view the entire scene to enable the Next button">
               Next View
             </button>
           </div>
@@ -2004,7 +2021,7 @@
               submitBtn.disabled = true;  // Keep submit button disabled until progress is complete
               const feedbackDiv = document.querySelector(".feedback-text");
               if (feedbackDiv) {
-                feedbackDiv.textContent = "Please view the whole scene first.";
+                feedbackDiv.textContent = "Turn around 360° to explore the entire scene first.";
                 feedbackDiv.className = "feedback-text feedback-incorrect";
               }
 
@@ -2055,7 +2072,7 @@
             } else {
               submitBtn.disabled = true;
               if (feedbackDiv) {
-                feedbackDiv.textContent = "Please view the whole scene first.";
+                feedbackDiv.textContent = "Turn around 360° to explore the entire scene first.";
                 feedbackDiv.className = "feedback-text feedback-incorrect";
               }
             }
@@ -2275,7 +2292,7 @@
                       document.getElementById('submitBtn').style.display = 'block';
                       document.getElementById('submitBtn').disabled = false;
                       document.getElementById('nextViewBtn').disabled = true;
-                      document.getElementById('nextViewBtn').title = "Please view the whole scene to proceed";
+                      document.getElementById('nextViewBtn').title = "Turn around and view the entire scene to enable the Next button";
                       nextViewBtn.classList.remove('complete');
                       nextViewBtn.style.backgroundColor = '';  // Reset to default
                       nextViewBtn.style.cursor = '';
@@ -2564,12 +2581,12 @@
       // Disable Next View button and Submit button initially
       document.getElementById('nextViewBtn').disabled = true;
       document.getElementById('nextViewBtn').style.cursor = ('not-allowed');
-      document.getElementById('nextViewBtn').title = "Please view the whole scene to proceed";
+      document.getElementById('nextViewBtn').title = "Turn around and view the entire scene to enable the Next button";
       const submitBtn = document.getElementById('submitBtn');
       submitBtn.disabled = true;
       const feedbackDiv = document.querySelector(".feedback-text");
       if (feedbackDiv) {
-        feedbackDiv.textContent = "Please view the whole scene first.";
+        feedbackDiv.textContent = "Turn around 360° to explore the entire scene first.";
         feedbackDiv.className = "feedback-text feedback-incorrect";
       }
 
@@ -2655,7 +2672,7 @@
             const revisitBtn = document.getElementById('revisitBtn');
             revisitBtn.disabled = false;
             revisitBtn.classList.add('complete');
-            revisitBtn.title = "€0.30 to review all previously seen views";
+            revisitBtn.title = "-€0.30 to review all previously seen views";
             revisitBtn.style.display = 'block';
           }
 
@@ -2671,7 +2688,7 @@
           // Disable Submit button and show message
           submitBtn.disabled = true;
           if (feedbackDiv) {
-            feedbackDiv.textContent = "Please view the whole scene first.";
+            feedbackDiv.textContent = "Turn around 360° to explore the entire scene first.";
             feedbackDiv.className = "feedback-text feedback-incorrect";
           }
         }
@@ -2701,7 +2718,7 @@
 
         document.getElementById('nextViewBtn').classList.remove('complete');
         document.getElementById('nextViewBtn').disabled = true;
-        document.getElementById('nextViewBtn').title = "Please view the whole scene to proceed";
+        document.getElementById('nextViewBtn').title = "Turn around and view the entire scene to enable the Next button";
         updateSections();
       };
 
@@ -2715,7 +2732,7 @@
         // Reset the right hover trigger
         document.getElementById('nextViewBtn').classList.remove('complete');
         document.getElementById('nextViewBtn').disabled = true;
-        document.getElementById('nextViewBtn').title = "Please view the whole scene to proceed";
+        document.getElementById('nextViewBtn').title = "Turn around and view the entire scene to enable the Next button";
         hasRecordedCompletionTime = false; // Reset the flag when cleaning up
       };
 
@@ -2732,7 +2749,7 @@
         <div style="height: 100vh; display: flex; flex-direction: column; gap: 1vh;">
           <div class="money-container">
             <div class="money-display"></div>
-            <button id="nextViewBtn" class="next-view-btn" disabled title="Please view the whole scene to proceed">
+            <button id="nextViewBtn" class="next-view-btn" disabled title="Turn around and view the entire scene to enable the Next button">
               Next View
             </button>
             <button id="revisitBtn" class="next-view-btn" 
@@ -2913,7 +2930,7 @@
               submitBtn.disabled = true;  // Keep submit button disabled until progress is complete
               const feedbackDiv = document.querySelector(".feedback-text");
               if (feedbackDiv) {
-                feedbackDiv.textContent = "Please view the whole scene first.";
+                feedbackDiv.textContent = "Turn around 360° to explore the entire scene first.";
                 feedbackDiv.className = "feedback-text feedback-incorrect";
               }
 
@@ -3001,7 +3018,7 @@
             } else {
               submitBtn.disabled = true;
               if (feedbackDiv) {
-                feedbackDiv.textContent = "Please view the whole scene first.";
+                feedbackDiv.textContent = "Turn around 360° to explore the entire scene first.";
                 feedbackDiv.className = "feedback-text feedback-incorrect";
               }
             }
@@ -3226,7 +3243,7 @@
                       document.getElementById('submitBtn').disabled = false;
                       document.getElementById('nextViewBtn').disabled = true;
                       document.getElementById('nextViewBtn').textContent = 'Next View'
-                      document.getElementById('nextViewBtn').title = "Please view the whole scene to proceed";
+                      document.getElementById('nextViewBtn').title = "Turn around and view the entire scene to enable the Next button";
                       nextViewBtn.classList.remove('complete');
                       nextViewBtn.style.backgroundColor = '';  // Reset to default
                       nextViewBtn.style.cursor = ''; 
