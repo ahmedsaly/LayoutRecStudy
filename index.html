@@ -248,11 +248,12 @@
     /* Hover Trigger - Bottom bar that reveals options panel */
     .hover-trigger {
       position: fixed;
-      bottom: 10px;
+      bottom: 1%;
       left: 50%;
       transform: translateX(-50%);
       width: 20%;
       height: 3%;
+      min-height: 15px;
       background: rgba(255, 255, 255, 0.2);
       z-index: 1001;
       cursor: pointer;
@@ -270,17 +271,21 @@
     /* Upward-pointing triangle indicator */
     .hover-trigger::before {
       content: '';
-      position: absolute;
-      top: 8px;
+      position: relative;
+      top: 1.5%;
 
       /* Triangle shape */
-      width: 0;
-      height: 0;
-      border-left: 8px solid transparent;
-      border-right: 8px solid transparent;
-      border-bottom: 8px solid rgba(255, 255, 255, 0.8);
+      width: 8%;
+      height: 40%;
+
+      background: rgba(255,255,255,0.8);
     
-      /* transition: all 0.2s ease-in-out; */
+      /* carve out a triangle */
+      clip-path: polygon(
+        50% 0%,   /* top center */
+        0% 100%,  /* bottom left */
+        100% 100% /* bottom right */
+      );
     }
 
     /* Bottom line indicator */
@@ -291,7 +296,7 @@
       left: 50%;
       transform: translateX(-50%);
       width: 100%;
-      height: 2px;
+      height: 10%;
       background: rgba(255, 255, 255, 0.5);
     }
 
@@ -328,11 +333,14 @@
       bottom: -100%;
       left: 0;
       width: 100%;
+      max-height: 90%;
+      overflow-y: auto;
+      overflow-x: hidden;
       z-index: 1000;
       
       /* Styling */
       background-color: rgba(255, 255, 255, 0.95);
-      padding: 20px 0px 20px 0px;
+      padding: 1% 0% 1% 0%;
       border-radius: 10px 10px 0 0;
       box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
 
@@ -380,9 +388,10 @@
     
     /* Submit button margin */
     #submitBtn, #confirmBtn, #nextLayoutBtn {
-      margin-bottom: 20px;
+      margin-bottom: 3%;
       white-space: nowrap;
       padding: 0.5vh 2vw;
+      cursor: pointer;
     }
 
     .confirm-btn, #nextLayoutBtn {
@@ -415,36 +424,43 @@
 
     /* Layout container adjustments */
     #layout-container {
-      width: 100%;
+      width: 95.5%;
       margin: 0 auto;
     }
 
     #layout-container p {
-      margin: 1vh 0;
-      font-size: calc(12px + 0.3vw);
+      margin: 0.3% 0;
+      /* font-size: calc(12px + 0.3vw); */
+      font-size: clamp(0.9rem, 1.2vw + 0.5rem, 1.1rem);
     }
 
     /* Layout Options Grid */
     .layout-options-container {
       display: flex;
-      gap: 1.5vw;
+      gap: 1.5%;
       justify-content: center;
-      padding: 1vh 0;
+      padding: 0.3% 0;
       flex-wrap: nowrap;
       width: 100%;
     }
 
     /* Layout option container */
     .layout-option {
-      position: relative;
-      margin: 0 1vw;
+      flex: 1;
+      min-width: 0;
+      max-width: 35%; 
+      margin: 0;
+      flex-direction: column;
+      align-items: center;
     }
 
     /* Layout Images */
     .layout-img {
       cursor: pointer;
-      width: 90%;
+      width: auto;
+      height: auto;
       max-height: 37vh;
+      max-width: 100%;
       border: 2px solid transparent;
     }
 
@@ -456,10 +472,7 @@
 
     /* Layout labels */
     .layout-label {
-      position: absolute;
-      bottom: -3vh;
-      left: 50%;
-      transform: translateX(-50%);
+      position: static;
       font-size: calc(14px + 0.2vw);
       font-weight: bold;
       color: #333;
@@ -479,7 +492,7 @@
 
     /* Potential bonus message */
     .potential-bonus-message {
-      padding: 10px;
+      padding: 0.5%;
       background-color: rgba(0, 123, 255, 0.1);
       border-radius: 5px;
       text-align: center;
@@ -488,7 +501,7 @@
       width: 70%;
       align-self: center;
       justify-content: center;
-      margin: 2vh auto 0 auto;
+      margin: 0.5% auto 0 auto;
     }
 
     .bonus-amount {
@@ -500,7 +513,7 @@
       text-align: center;
       font-weight: bold;
       font-size: clamp(12px, 2vmin, 16px);
-      margin: 1vh 0;
+      margin: 0.5% 0;
     }
 
     .feedback-correct {
@@ -516,9 +529,9 @@
        ---------------------- */
     /* Confidence scale container */
     .confidence-container {
-      margin: 0px 0;
+      margin: 0 0;
       width: 80%;
-      padding: 10px;
+      padding: 0.5%;
       border-radius: 8px;
       margin:auto;
     }
@@ -539,9 +552,9 @@
       display: flex;
       justify-content: center;
       /* flex-wrap: nowrap; */
-      gap: 1vw;
+      gap: 1%;
       align-items: center;
-      padding: 0 1vw;
+      padding: 0 1%;
     }
 
     .confidence-option {
@@ -603,13 +616,13 @@
     let tut_viewIndex = 0;
     let currentViewedAngles = new Set();
     let tut_currentViewedAngles = new Set();
-    let viewCost = 0.30;
-    let tut_viewCost = 0.30;
-    let baseMoney = 1.00;
-    let tut_baseMoney = 1.00;
-    let maxBonus = 4.00;
-    let tut_maxBonus = 4.00;
-    let tut_viewsTaken = 0;
+    let viewCost = 0.10;
+    let tut_viewCost = 0.10;
+    let baseMoney = 4.00;
+    let tut_baseMoney = 4.00;
+    let maxBonus = 0.80;
+    let tut_maxBonus = 0.80;
+    // let tut_viewsTaken = 0;
     let viewStartTime = 0;
     let tut_viewStartTime = 0;
     let viewDurations = [];
@@ -632,6 +645,10 @@
     let isRevisitPhase = false;
     let viewsForBonus = 0;  // Tracks views that deduct from bonus
     let totalViewsViewed = 1; // Tracks all views (including revisits)
+    let tut_hasRevisited = false;
+    let tut_isRevisitPhase = false;
+    let tut_viewsForBonus = 0;  // Tracks views that deduct from bonus
+    let tut_totalViewsViewed = 1;
 
     // Get experiment key from URL (1-5)
     const urlParams = new URLSearchParams(window.location.search);
@@ -657,10 +674,18 @@
     // };
 
     // To this (synchronous):
-    window.addEventListener('beforeunload', (e) => {
+    // window.addEventListener('beforeunload', (e) => {
+    //   e.preventDefault();
+    //   e.returnValue = "Warning message...";
+    // });
+
+    const beforeUnloadHandler = (e) => {
       e.preventDefault();
       e.returnValue = "Warning message...";
-    });
+    };
+
+    // Attach it once globally
+    window.addEventListener('beforeunload', beforeUnloadHandler);
 
     // // Prevent repeat participation in the same browser
     // const localKey = `layout_exp_started_${subject_id}`;
@@ -757,7 +782,7 @@
         name: "B10108",
         options: ["panorama/B_10108/Layout_Options/opt1.png", "panorama/B_10108/Layout_Options/opt4.png", "panorama/B_10108/Layout_Options/opt2.png", "panorama/B_10108/Layout_Options/opt3.png"],
         correctAnswer: "B",
-        maxBonus: 4.00,
+        maxBonus: 0.80,
         conditions: {
           1: ["panorama/B_10108/B_10108_minOverlap/B_10108_minOverlap_2.png", "panorama/B_10108/B_10108_minOverlap/B_10108_minOverlap_1.png", "panorama/B_10108/B_10108_minOverlap/B_10108_minOverlap_3.png", "panorama/B_10108/B_10108_minOverlap/B_10108_minOverlap_4.png"],
           2: ["panorama/B_10108/B_10108_maxOverlap_NoLandmarks/B_10108_maxOverlap_1.png", "panorama/B_10108/B_10108_maxOverlap_NoLandmarks/B_10108_maxOverlap_3.png", "panorama/B_10108/B_10108_maxOverlap_NoLandmarks/B_10108_maxOverlap_2.png", "panorama/B_10108/B_10108_maxOverlap_NoLandmarks/B_10108_maxOverlap_4.png"],
@@ -770,7 +795,7 @@
         name: "B10028",
         options: ["panorama/B_10028/Layout_Options/opt1.png", "panorama/B_10028/Layout_Options/opt5.png", "panorama/B_10028/Layout_Options/opt2.png", "panorama/B_10028/Layout_Options/opt4.png"],
         correctAnswer: "B",
-        maxBonus: 4.00,
+        maxBonus: 0.80,
         conditions: {
           1: ["panorama/B_10028/B_10028_minOverlap/B_10028_MinOverlap_2.png", "panorama/B_10028/B_10028_minOverlap/B_10028_MinOverlap_5.png", "panorama/B_10028/B_10028_minOverlap/B_10028_MinOverlap_4.png", "panorama/B_10028/B_10028_minOverlap/B_10028_MinOverlap_6.png", "panorama/B_10028/B_10028_minOverlap/B_10028_MinOverlap_1.png", "panorama/B_10028/B_10028_minOverlap/B_10028_MinOverlap_3.png"],
           2: ["panorama/B_10028/B_10028_maxOverlap_NoLandmarks/B_10028_MaxOverlap_6.png", "panorama/B_10028/B_10028_maxOverlap_NoLandmarks/B_10028_MaxOverlap_3.png", "panorama/B_10028/B_10028_maxOverlap_NoLandmarks/B_10028_MaxOverlap_5.png", "panorama/B_10028/B_10028_maxOverlap_NoLandmarks/B_10028_MaxOverlap_2.png", "panorama/B_10028/B_10028_maxOverlap_NoLandmarks/B_10028_MaxOverlap_4.png", "panorama/B_10028/B_10028_maxOverlap_NoLandmarks/B_10028_MaxOverlap_1.png"],
@@ -783,7 +808,7 @@
         name: "B10023",
         options: ["panorama/B_10023/Layout_Options/opt1.png", "panorama/B_10023/Layout_Options/opt4.png", "panorama/B_10023/Layout_Options/opt2.png", "panorama/B_10023/Layout_Options/opt3.png"],
         correctAnswer: "B",
-        maxBonus: 4.00,
+        maxBonus: 0.80,
         conditions: {
           1: ["panorama/B_10023/B_10023_minOverlap/B_10023_MinOverlap_5.png", "panorama/B_10023/B_10023_minOverlap/B_10023_MinOverlap_2.png", "panorama/B_10023/B_10023_minOverlap/B_10023_MinOverlap_4.png", "panorama/B_10023/B_10023_minOverlap/B_10023_MinOverlap_1.png", "panorama/B_10023/B_10023_minOverlap/B_10023_MinOverlap_3.png"],
           2: ["panorama/B_10023/B_10023_maxOverlap_NoLandmarks/B_10023_MaxOverlap_3.png", "panorama/B_10023/B_10023_maxOverlap_NoLandmarks/B_10023_MaxOverlap_1.png", "panorama/B_10023/B_10023_maxOverlap_NoLandmarks/B_10023_MaxOverlap_4.png", "panorama/B_10023/B_10023_maxOverlap_NoLandmarks/B_10023_MaxOverlap_2.png", "panorama/B_10023/B_10023_maxOverlap_NoLandmarks/B_10023_MaxOverlap_5.png"],
@@ -796,7 +821,7 @@
         name: "B10020",
         options: ["panorama/B_10020/Layout_Options/opt4.png", "panorama/B_10020/Layout_Options/opt1.png", "panorama/B_10020/Layout_Options/opt2.png", "panorama/B_10020/Layout_Options/opt3.png"],
         correctAnswer: "A",
-        maxBonus: 4.00,
+        maxBonus: 0.80,
         conditions: {
           1: ["panorama/B_10020/B_10020_minOverlap/B_10020_minOverlap_3.png", "panorama/B_10020/B_10020_minOverlap/B_10020_minOverlap_1.png", "panorama/B_10020/B_10020_minOverlap/B_10020_minOverlap_4.png", "panorama/B_10020/B_10020_minOverlap/B_10020_minOverlap_2.png"],
           2: ["panorama/B_10020/B_10020_maxOverlap_NoLandmarks/B_10020_maxOverlap_3.png", "panorama/B_10020/B_10020_maxOverlap_NoLandmarks/B_10020_maxOverlap_1.png", "panorama/B_10020/B_10020_maxOverlap_NoLandmarks/B_10020_maxOverlap_4.png", "panorama/B_10020/B_10020_maxOverlap_NoLandmarks/B_10020_maxOverlap_2.png"],
@@ -809,7 +834,7 @@
         name: "B10103",
         options: ["panorama/B_10103/Layout_Options/opt4.png", "panorama/B_10103/Layout_Options/opt1.png", "panorama/B_10103/Layout_Options/opt2.png", "panorama/B_10103/Layout_Options/opt3.png"],
         correctAnswer: "A",
-        maxBonus: 4.00,
+        maxBonus: 0.80,
         conditions: {
           1: ["panorama/B_10103/B_10103_minOverlap/B_10103_minOverlap_3.png", "panorama/B_10103/B_10103_minOverlap/B_10103_minOverlap_6.png", "panorama/B_10103/B_10103_minOverlap/B_10103_minOverlap_5.png", "panorama/B_10103/B_10103_minOverlap/B_10103_minOverlap_2.png", "panorama/B_10103/B_10103_minOverlap/B_10103_minOverlap_1.png", "panorama/B_10103/B_10103_minOverlap/B_10103_minOverlap_4.png"],
           2: ["panorama/B_10103/B_10103_maxOverlap_NoLandmarks/B_10103_maxOverlap_2.png", "panorama/B_10103/B_10103_maxOverlap_NoLandmarks/B_10103_maxOverlap_4.png", "panorama/B_10103/B_10103_maxOverlap_NoLandmarks/B_10103_maxOverlap_5.png", "panorama/B_10103/B_10103_maxOverlap_NoLandmarks/B_10103_maxOverlap_1.png", "panorama/B_10103/B_10103_maxOverlap_NoLandmarks/B_10103_maxOverlap_6.png", "panorama/B_10103/B_10103_maxOverlap_NoLandmarks/B_10103_maxOverlap_3.png"],
@@ -876,7 +901,7 @@
         tut_panoramas: ["Tutorial_data/tut1.png", "Tutorial_data/tut2.png"],
         tut_options: ["Tutorial_data/Layout_Options/opt1.png", "Tutorial_data/Layout_Options/opt2.png"],
         tut_correctAnswer: "A",
-        tut_maxBonus: 4.00
+        tut_maxBonus: 0.80
       }
     ];
 
@@ -1337,7 +1362,7 @@
     let tut_totalEarned = tut_baseMoney;
 
     const tut_updateMoneyDisplay = () => {
-      const tut_currentBonus = (tut_maxBonus - tut_viewsTaken * tut_viewCost).toFixed(2);
+      const tut_currentBonus = (tut_maxBonus - tut_viewsForBonus * tut_viewCost).toFixed(2);
       const tut_moneyDisplay = document.querySelector('.money-display');
       const tut_previousBonus = tut_moneyDisplay.querySelector('.bonus-value')?.textContent.replace('+€', '');
       
@@ -1508,6 +1533,7 @@
       
       // Disable Next View button and Submit button initially
       document.getElementById('nextViewBtn').disabled = true;
+      document.getElementById('nextViewBtn').style.cursor = ('not-allowed');
       document.getElementById('nextViewBtn').title = "Turn around and view the entire scene to enable the Next button";
       const submitBtn = document.getElementById('submitBtn');
       submitBtn.disabled = true;
@@ -1582,12 +1608,25 @@
             document.getElementById('nextViewBtn').disabled = false;
             document.getElementById('nextViewBtn').title = "You can now proceed to the next view";
             document.getElementById('nextViewBtn').classList.add('complete');
-          } else {
+            document.getElementById('nextViewBtn').style.cursor = '';
+            document.getElementById('nextViewBtn').style.backgroundColor = '';
+          } 
+          else {
             document.getElementById('nextViewBtn').disabled = true;
+            document.getElementById('nextViewBtn').textContent = 'Final View';
             document.getElementById('nextViewBtn').title = "No more views available";
-            document.getElementById('nextViewBtn').classList.remove('complete');
+            document.getElementById('nextViewBtn').classList.remove('complete', 'disabled-styles');
             document.getElementById('nextViewBtn').style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
             document.getElementById('nextViewBtn').style.cursor = 'not-allowed';
+          }
+
+          // Add revisit button logic
+          if (tut_viewIndex === test_layout[tut_currentLayoutIndex].tut_panoramas.length - 1 && !tut_hasRevisited) {
+            const revisitBtn = document.getElementById('revisitBtn');
+            revisitBtn.disabled = false;
+            revisitBtn.classList.add('complete');
+            revisitBtn.title = "-€0.10 to review all previously seen views";
+            revisitBtn.style.display = 'block';
           }
 
           progressCircle.style.boxShadow = '0 0 10px rgba(40,167,69,0.8)'; // Add glow effect when complete
@@ -1622,6 +1661,10 @@
 
         const section = Math.floor(longitude / angleThreshold);
         tut_currentViewedAngles.add(section);
+
+        document.getElementById('nextViewBtn').classList.remove('complete');
+        document.getElementById('nextViewBtn').disabled = true;
+        document.getElementById('nextViewBtn').title = "Turn around and view the entire scene to enable the Next button";
         updateSections();
       };
 
@@ -1858,6 +1901,11 @@
             <button id="nextViewBtn" class="next-view-btn" disabled title="Turn around and view the entire scene to enable the Next button">
               Next View
             </button>
+            <button id="revisitBtn" class="next-view-btn" 
+                    style="display: none; margin-top: 10px;" 
+                    title="-€0.10 to review all previously seen views">
+              Revisit All Views (- €${viewCost.toFixed(2)})
+            </button>
           </div>
           <div id="panorama"></div>
           <div class="hover-trigger"></div>
@@ -1874,7 +1922,7 @@
             <div class="feedback-text"></div>
             <div id="message" class="message-container"></div>
             <button id="submitBtn">Submit Choice</button>
-            <button id="nextLayoutBtn" style="display: none;">Next Layout</button>
+            <button id="nextLayoutBtn" style="display: none;">To the main experiment</button>
           </div>
         </div>
       `,
@@ -1992,7 +2040,12 @@
               tut_viewDurations.push(tut_viewDuration);
               
               tut_viewIndex++;
-              tut_viewsTaken++;
+              tut_totalViewsViewed++;
+
+              // Only increment viewsTaken if not in revisit phase
+              if (!tut_isRevisitPhase && tut_viewIndex >= 1) {
+                tut_viewsForBonus++;
+              }
                 
               // Clean up the previous panorama before rendering the new one
               const panoDiv = document.getElementById('panorama');
@@ -2009,7 +2062,7 @@
               // Update the bonus amount in the bottom section
               const bonusAmount = document.querySelector('.bonus-amount');
               if (bonusAmount) {
-                bonusAmount.textContent = (tut_maxBonus - tut_viewsTaken * tut_viewCost).toFixed(2);
+                bonusAmount.textContent = (tut_maxBonus - tut_viewsForBonus * tut_viewCost).toFixed(2);
               }
 
               // Reset buttons to initial state
@@ -2036,6 +2089,42 @@
               // Start timing new view
               tut_viewStartTime = Date.now();
             }
+          }
+        });
+
+        document.getElementById('revisitBtn').addEventListener('click', function() {
+          if (!tut_hasRevisited) {
+            // logAreaChange('Revisit_phase')
+
+            const tut_viewDuration = Date.now() - tut_viewStartTime;
+            tut_viewDurations.push(tut_viewDuration);
+
+            // Deduct fee once
+            tut_viewsForBonus++;
+            tut_updateMoneyDisplay();
+            tut_hasRevisited = true;
+            tut_isRevisitPhase = true;
+
+            tut_totalViewsViewed ++;
+            
+            // Reset view index
+            tut_viewIndex = 0;
+            
+            // Clean up panorama
+            const panoDiv = document.getElementById('panorama');
+            if (panoDiv.cleanup) panoDiv.cleanup();
+
+            this.style.display = 'none';
+            
+            // Render first view again
+            tut_renderPanorama(test_layout[tut_currentLayoutIndex].tut_panoramas[tut_viewIndex], panoDiv);
+
+            tut_viewStartTime = Date.now(); // Reset timing for new view
+            
+            // Enable next view button
+            document.getElementById('nextViewBtn').disabled = false;
+            nextViewBtn.style.cursor = 'not-allowed';
+            document.getElementById('nextViewBtn').textContent = 'Next View (Free)';
           }
         });
 
@@ -2092,7 +2181,7 @@
         let reminderShown = false;
         // Modify Submit button handler
         document.getElementById('submitBtn').addEventListener('click', () => {
-          logActionInArea(`submitBtn`);
+          // logActionInArea(`submitBtn`);
           const tut_selectedLayout = document.querySelector(".layout-img.selected")?.getAttribute("data-choice");
           const messageDiv = document.getElementById('message');
           const feedbackDiv = document.querySelector(".feedback-text");
@@ -2105,7 +2194,7 @@
           }
 
           // Check if this is the first view and reminder hasn't been shown yet
-          if (tut_viewIndex === 0 && !reminderShown) {
+          if (tut_viewIndex === 0 && !reminderShown && !tut_isRevisitPhase) {
             messageDiv.innerHTML = `
               <div class="reminder-message">
                 <p style="color: #e63946;">It's impossible to identify the correct layout from just the first view. Try viewing the second view by clicking the <strong>Next View</strong> button.</p>
@@ -2213,7 +2302,7 @@
                     tutorial_layout_index: tut_currentLayoutIndex + 1,
                     tutorial_start_time: tut_layoutStartTime,
                     tutorial_end_time: getTimestamp(),
-                    tutorial_view_count: tut_viewsTaken + 1,
+                    tutorial_view_count: tut_totalViewsViewed,
                     tutorial_view_durations: tut_viewDurations.join(';'),
                     tutorial_progress_times: tut_progressCompletionTimes.join(';'),
                     tutorial_total_time: tut_viewDurations.reduce((a, b) => a + b, 0),
@@ -2221,7 +2310,8 @@
                     tutorial_correct_choice: tut_currentLayout.tut_correctAnswer,
                     tutorial_is_correct: tut_selectedLayout === tut_currentLayout.tut_correctAnswer,
                     tutorial_confidence: parseInt(option.dataset.value),
-                    tutorial_earned_bonus: tut_selectedLayout === tut_currentLayout.tut_correctAnswer ? (tut_currentLayout.tut_maxBonus - tut_viewsTaken * tut_viewCost) : 0,
+                    tutorial_earned_bonus: tut_selectedLayout === tut_currentLayout.tut_correctAnswer ? (tut_currentLayout.tut_maxBonus - tut_viewsForBonus * tut_viewCost) : 0,
+                    tutorial_revisited: tut_hasRevisited,
                   };
                   tutorialLayoutData.push(tutorialResult);
 
@@ -2241,7 +2331,7 @@
                   });
 
                   const isCorrect = tut_selectedLayout === tut_currentLayout.tut_correctAnswer;
-                  const earnedBonus = isCorrect ? (tut_currentLayout.tut_maxBonus - tut_viewsTaken * tut_viewCost) : 0;
+                  const earnedBonus = isCorrect ? (tut_currentLayout.tut_maxBonus - tut_viewsForBonus * tut_viewCost) : 0;
                   tut_totalEarned += earnedBonus;
 
                   // Show feedback
@@ -2275,9 +2365,18 @@
                     nextLayoutBtn.textContent = 'Next Layout';
                     nextLayoutBtn.onclick = () => {
                       // logAreaChange('between-layouts');
+                      // Reset revisit state
+                      tut_hasRevisited = false;
+                      tut_isRevisitPhase = false;
+                        
+                      // Restore original buttons
+                      document.getElementById('nextViewBtn').style.display = 'block';
+                      document.getElementById('revisitBtn').style.display = 'none';
+
                       tut_currentLayoutIndex++;
                       tut_viewIndex = 0;
-                      tut_viewsTaken = 0;
+                      tut_viewsForBonus = 0;
+                      tut_totalViewsViewed = 1;
                           
                       // Clean up the previous panorama
                       const panoDiv = document.getElementById('panorama');
@@ -2362,7 +2461,7 @@
                         // Update the bonus amount to match the current potential bonus
                         const bonusAmount = bonusMessage.querySelector('.bonus-amount');
                         if (bonusAmount) {
-                          bonusAmount.textContent = (tut_maxBonus - tut_viewsTaken * tut_viewCost).toFixed(2);
+                          bonusAmount.textContent = (tut_maxBonus - tut_viewsForBonus * tut_viewCost).toFixed(2);
                         }
                       }
                       
@@ -2411,11 +2510,10 @@
                     };
                   }
                   else {
-                    nextLayoutBtn.textContent = 'To the main experiment';
+                    // nextLayoutBtn.textContent = 'To the main experiment';
                     nextLayoutBtn.onclick = () => {
                       // Log final transition
                       // logAreaChange('experiment-end');
-
                       jsPsych.finishTrial();
                     };
                   };
@@ -2447,7 +2545,8 @@
         "tutorial_correct_choice",
         "tutorial_is_correct",
         "tutorial_confidence",
-        "tutorial_earned_bonus"
+        "tutorial_earned_bonus",
+        "tutorial_Revisited_views"
       ].join(",");
 
       const rows = tutorialLayoutData.map(layout => [
@@ -2463,7 +2562,8 @@
         layout.tutorial_correct_choice,
         layout.tutorial_is_correct,
         layout.tutorial_confidence,
-        layout.tutorial_earned_bonus
+        layout.tutorial_earned_bonus,
+        layout.tutorial_revisited
       ].join(","));
 
       return [headers, ...rows].join("\n");
@@ -2672,7 +2772,7 @@
             const revisitBtn = document.getElementById('revisitBtn');
             revisitBtn.disabled = false;
             revisitBtn.classList.add('complete');
-            revisitBtn.title = "-€0.30 to review all previously seen views";
+            revisitBtn.title = "-€0.10 to review all previously seen views";
             revisitBtn.style.display = 'block';
           }
 
@@ -2754,8 +2854,8 @@
             </button>
             <button id="revisitBtn" class="next-view-btn" 
                     style="display: none; margin-top: 10px;" 
-                    title="-€0.30 to review all previously seen views">
-              Revisit All Views (€${viewCost.toFixed(2)})
+                    title="-€0.10 to review all previously seen views">
+              Revisit All Views (- €${viewCost.toFixed(2)})
             </button>
           </div>
           <div id="panorama"></div>
@@ -3555,6 +3655,9 @@
           
           if (timeLeft <= 0) {
             clearInterval(countdown);
+
+            // Remove the handler so there's no alert
+            window.removeEventListener('beforeunload', beforeUnloadHandler);
             window.location.href = "https://app.prolific.co/submissions/complete?cc=XXXXXXX";
           }
         }, 1000);
