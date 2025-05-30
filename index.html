@@ -29,6 +29,7 @@
   <script src="https://unpkg.com/@jspsych/plugin-image-keyboard-response@2.1.0"></script>
   <script src="https://unpkg.com/@jspsych/plugin-preload@2.1.0"></script>
   <script src="https://unpkg.com/@jspsych/plugin-html-button-response@2.1.0"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-browser-check@2.1.0"></script>
   <!-- <script src="https://unpkg.com/@jspsych-contrib/plugin-pipe@0.4"></script> -->
   <script src="https://unpkg.com/@jspsych-contrib/plugin-pipe"></script>
 
@@ -333,7 +334,7 @@
       bottom: -100%;
       left: 0;
       width: 100%;
-      max-height: 90%;
+      max-height: 80%;
       overflow-y: auto;
       overflow-x: hidden;
       z-index: 1000;
@@ -911,6 +912,15 @@
 
     /* create timeline */
     var timeline = [];
+
+    const browser_block = {
+      type: jsPsychBrowserCheck,
+      data: { task: "browser_info" },
+    };
+
+    timeline.unshift(browser_block);
+
+    // console.log(jsPsych.data.get().values());
 
     // Collect all unique image paths from layouts and test_layout
     const allImages = new Set();
@@ -3503,7 +3513,13 @@
         trial_type: trial.trial_type,
         end_time: trial.end_time,
         time_elapsed: trial.time_elapsed,
-        totalEarned: trial.totalEarned
+        totalEarned: trial.totalEarned,
+
+        browser: trial.browser,
+        os: trial.os,
+        mobile: trial.mobile,
+        screen_width: trial.width,
+        screen_height: trial.height
       }));
 
       const headers = Object.keys(filteredData[0]).join(',');
