@@ -30,6 +30,8 @@
   <script src="https://unpkg.com/@jspsych/plugin-preload@2.1.0"></script>
   <script src="https://unpkg.com/@jspsych/plugin-html-button-response@2.1.0"></script>
   <script src="https://unpkg.com/@jspsych/plugin-browser-check@2.1.0"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-survey-multi-choice@2.1.0"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-survey-html-form@2.1.0"></script>
   <!-- <script src="https://unpkg.com/@jspsych-contrib/plugin-pipe@0.4"></script> -->
   <script src="https://unpkg.com/@jspsych-contrib/plugin-pipe"></script>
 
@@ -64,9 +66,24 @@
 
     #jspsych-target {
       flex-direction: column;
-      width: 100vw;
-      height: 100vh;
+      width: 100%;
+      /* height: 100%; */
       margin: 0;
+    }
+
+    .jspsych-content-wrapper {
+      display: flex;
+      margin: auto;
+      flex: 1 1 100%;
+      align-self: center;
+      align-items: center;
+    }
+
+    .jspsych-content {
+      text-align: center;
+      margin: auto;
+      min-width: 70%;
+      justify-items: center;
     }
 
     .black-background {
@@ -980,13 +997,10 @@
           <h3>Part 2: Layout Recognition</h3>
           <p>In this part, you will view several 360° panoramic images, each representing a different location within a building.  
           You will explore 5 buildings layouts during the experiment.
-          You can explore each 360° view by clicking and dragging with your mouse or using the arrow keys.
+
           After viewing the scenes, you will need to select the correct layout that 
           matches what you've seen.</p>
-          
-          <p>You will first complete a tutorial to learn how the experiment works, 
-          followed by the actual tasks.</p>
-          
+
           <p>Press any key to continue.</p>
         </div>
       `,
@@ -1914,7 +1928,7 @@
             <button id="revisitBtn" class="next-view-btn" 
                     style="display: none; margin-top: 10px;" 
                     title="-€0.10 to review all previously seen views">
-              Revisit All Views (- €${viewCost.toFixed(2)})
+              Revisit All Views (-€${viewCost.toFixed(2)})
             </button>
           </div>
           <div id="panorama"></div>
@@ -2865,7 +2879,7 @@
             <button id="revisitBtn" class="next-view-btn" 
                     style="display: none; margin-top: 10px;" 
                     title="-€0.10 to review all previously seen views">
-              Revisit All Views (- €${viewCost.toFixed(2)})
+              Revisit All Views (-€${viewCost.toFixed(2)})
             </button>
           </div>
           <div id="panorama"></div>
@@ -3084,6 +3098,12 @@
             
             // Render first view again
             renderPanorama(layouts[currentLayoutIndex].panoramas[viewIndex], panoDiv);
+
+            // Update the bonus amount in the bottom section
+            const bonusAmount = document.querySelector('.bonus-amount');
+            if (bonusAmount) {
+              bonusAmount.textContent = (maxBonus - viewsForBonus * viewCost).toFixed(2);
+            }
 
             viewStartTime = Date.now(); // Reset timing for new view
             
@@ -3497,6 +3517,84 @@
     };
     timeline.push(trial_combined);
 
+    const strategy_survey = {
+      type: jsPsychSurveyHtmlForm,
+      // preamble: "<h3>Strategy Questions</h3>",
+      html: `
+        <div style="text-align: left; max-width: 90%; justify-self: center; justify-items: center">
+          <div>
+            <label style="font-size: 1.2em;"><strong>Which of the following strategies mostly describes how you guessed the correct layouts?</strong><br>
+            <span style="font-size: 0.9em;">(Choose the one that fits the best)</span></label><br><br>
+
+            <label style="font-size: 1em;">
+              <input type="radio" name="strategy" value="0" required>
+              <strong>Built a mental map of the space</strong><br>
+              <span style="margin-left: 25px; font-size: 0.95em; font-weight: normal;">I explored the views and mentally connected them to form a layout in my mind, then chose the option that matched what I imagined.</span>
+            </label><br><br>
+
+            <label style="font-size: 1em;">
+              <input type="radio" name="strategy" value="1" >
+              <strong>Focused on checking specific features</strong><br>
+              <span style="margin-left: 25px; font-size: 0.95em; font-weight: normal;">I didn’t try to form a full layout. I just looked for key features (like shapes, walls, objects, or openings) in each view to rule out incorrect options.</span>
+            </label><br><br>
+
+            <label style="font-size: 1em;">
+              <input type="radio" name="strategy" value="2">
+              <strong>Used a mix of both</strong><br>
+              <span style="margin-left: 25px; font-size: 0.95em; font-weight: normal;">I sometimes imagined the layout, and other times focused on specific features to help me decide.</span>
+            </label><br><br>
+
+            <label style="font-size: 1em;">
+              <input type="radio" name="strategy" value="3" id="other-option">
+              <strong>Other</strong><br>
+              <textarea name="comments" id="other-comments" rows="3" style="margin-left: 25px; width: 90%; display: none;" placeholder="Please describe your strategy here..."></textarea>
+            </label><br>
+          </div>
+        </div>
+      `,
+
+      on_load: function () {
+        // Show text box only when "Other" is selected
+        document.querySelectorAll('input[name="strategy"]').forEach(radio => {
+          radio.addEventListener('change', function () {
+            const commentBox = document.getElementById('other-comments');
+            commentBox.style.display = (this.value === '3') ? 'block' : 'none';
+          });
+        });
+      },
+      on_finish: function(data) {
+        const form = new URLSearchParams(data.response);
+        data.strategy = parseInt(form.get("strategy"));
+          // Decode multiline comments safely
+        const raw = form.get("comments") || "";
+        const decoded = decodeURIComponent(raw.replace(/\+/g, ' '));
+
+        // Replace line breaks with space or another safe separator
+        data.comment = decoded.replace(/(\r\n|\n|\r)/g, ' ').trim();
+      }
+    };
+    timeline.push(strategy_survey);
+
+    const sketch_survey = {
+      type: jsPsychSurveyHtmlForm,
+
+      html: `
+        <div style="text-align: left; justify-self: center; justify-items: center">
+          <div>
+            <label><strong>Did you sketch or draw the layout while solving the task?</strong><br>(Choose one)</label><br><br>
+            <label><input type="radio" name="sketch" value="1" required> ✍️ Yes – I sketched the layout on paper or digitally</label><br><br>
+            <label><input type="radio" name="sketch" value="0"> 🚫 No – I didn’t draw anything</label><br><br>
+          </div>
+        </div>
+      `,
+
+      on_finish: function(data) {
+        const form = new URLSearchParams(data.response);
+        data.sketch = parseInt(form.get("sketch"));
+      }
+    };
+    timeline.push(sketch_survey);
+
     // After your last trial (after trial_combined), add the save data trial:
     const save_data = saveData(filename, () => {
       // Get all data
@@ -3514,6 +3612,9 @@
         end_time: trial.end_time,
         time_elapsed: trial.time_elapsed,
         totalEarned: trial.totalEarned,
+        strategy: trial.strategy,
+        strategy_comment: trial.comment,    
+        sketched: trial.sketch,    
 
         browser: trial.browser,
         os: trial.os,
@@ -3636,12 +3737,13 @@
       return [headers, ...rows].join("\n");
     });
 
-    // Add to timeline
+    // // Add to timeline
     timeline.push(save_data);
     timeline.push(save_PTT_data);
     // timeline.push(save_tutorial_data);
     timeline.push(save_layout_data);
     timeline.push(save_log_data);
+
 
     const debrief_block = {
       type: jsPsychHtmlKeyboardResponse,
