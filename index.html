@@ -1044,17 +1044,14 @@
           <p>This study consists of two main parts:</p>
           
           <h3>Part 1: Perspective Taking Test</h3>
-          <p>In this part, you will be shown one scene with different objects in it. 
-          Your task is to imagine yourself standing at one location, facing another object, 
-          and pointing to a third object. You will need to indicate the correct direction 
+          <p>In this part, you will be shown one scene with several objects in it. 
+          Your task is to imagine yourself standing at one object, facing another, 
+          and pointing to a third. You will indicate the direction 
           by clicking on a circle.</p>
           
           <h3>Part 2: Layout Recognition</h3>
-          <p>In this part, you will view several 360° panoramic images, each representing a different location within a building.  
-          You will explore 5 buildings layouts during the experiment.
-
-          After viewing the scenes, you will need to select the correct layout that 
-          matches what you've seen.</p>
+          <p>In this part, you will explore five different building layouts. For each one, you’ll view a series of 360° panoramic images taken from various locations inside the layout.</p>
+          <p>Your goal for each layout is to view as many panoramas as needed, mentally integrate them, and then select the floor plan that best matches the space you've reconstructed in your mind.</p>
 
           <p>Press any key to continue.</p>
         </div>
@@ -1063,7 +1060,7 @@
         name: "Experiment Instructions"
       }
     };
-    timeline.push(experiment_instructions);
+    // timeline.push(experiment_instructions);
 
     // Instructions
     var PTT_instruction = {
@@ -1071,8 +1068,8 @@
         stimulus: `
             <div class="test-message">
             <h2>1. Perspective Taking Test</h2>
-            <p>This is a test of your ability to imagine different perspectives or orientations in space.</p>
-            <p>First you'll see an example, then you'll complete the actual tasks.</p>
+            <p>This test measures your ability to imagine different perspectives or orientations in space.</p>
+            <p>You’ll start with an example, followed by the main tasks.</p>
             <p>Press any key to continue.</p>
             </div>
         `,
@@ -1080,7 +1077,7 @@
           name: "PTT Instructions"
         }
     };
-    timeline.push(PTT_instruction );
+    // timeline.push(PTT_instruction );
 
     // Define the task parameters
     const TASK_ITEMS = [
@@ -1164,7 +1161,7 @@
         });
       }
     };
-    timeline.push(PTT_example);
+    // timeline.push(PTT_example);
 
     const PTT = {
       type: jsPsychHtmlButtonResponse,
@@ -1321,7 +1318,7 @@
         });
       },      
     };
-    timeline.push(PTT);
+    // timeline.push(PTT);
 
     // Helper function to draw the circle and lines
     function drawCircle(ctx, task, angle = null) {
@@ -1421,13 +1418,14 @@
         stimulus: `
           <div class="test-message">
           <h2>2. Layout Recognition</h2>
-          <p>In this part, you will explore 360° panoramic views of 5 different building layouts. 
-          You can explore each 360° view by clicking and dragging with your mouse or using the arrow keys.</p>
-          <p>After exploring the views, you will need to choose the layout that best matches what you've seen.</p>
-          <p><strong>Your base payment is guaranteed</strong>, but you can earn <strong>bonus money</strong> by making correct choices while using fewer views.</p>
-          <p>First you'll begin with a short tutorial, 
+          <p>In this part, you 'll explore 360° panoramic views of 5 different building layouts. 
+          You can look around each view by clicking and dragging with your mouse or using the arrow keys.</p>
+          <p>You’ll start each layout with a single 360° view. After that, you can view additional perspectives taken from other locations within the same layout.</p>
+          <p>Your task is to view as many panoramas as needed to form a mental map of the floor, and then select the layout that best matches what you've reconstructed in your mind.</p>
+          <p><strong>Your base payment is guaranteed</strong>, but you can earn a <strong>bonus money</strong> by correctly identifying layouts while using fewer views.</p>
+          <p>First you'll complete a short tutorial, 
           then you'll proceed to the main tasks.</p>
-          <p><strong>NOTE:</strong> The tutorial is just for practice. It does <strong>not</strong> affect your earnings.</p>
+          <p><strong>NOTE:</strong> The tutorial is for practice. It does <strong>not</strong> affect your earnings.</p>
           <p>Press any key to continue.</p>
           </div>
         `,
@@ -1435,7 +1433,7 @@
           name: "Layout Recognition Instructions"
         }
     };
-    timeline.push(LR_instruction );
+    // timeline.push(LR_instruction );
 
     let tut_currentLayoutIndex = 0;
     let tut_totalEarned = tut_baseMoney;
@@ -1851,30 +1849,35 @@
             message: "Welcome to the tutorial! This will show you how to complete the upcoming tasks.",
           },
           {
-            message: "This is a <strong>360 panoramic view</strong> of a layout. Later, you can use your mouse (click and drag) or arrow keys to look around.",
+            message: "This is a <strong>360 panoramic view</strong> of a layout. <br>Later, you can use your mouse (click and drag) or arrow keys to look around.",
             highlight: "panorama-container"
           },
           {
-            message: "Once you've explored a full 360° view, the <strong>Next View</strong> button will become available. Use it to see another view of the same layout.",
+            message: "Once you've explored the <strong>full</strong> 360° view, the <strong>Next View</strong> button will become <strong>active</strong>. Use it to see another view within the same layout.",
             position: "top",
             highlight: "next-view-btn"
           },
           {
-            message: "<strong>Earned Money</strong> is the amount you've collected so far.<br><strong>Potential Bonus</strong> is the extra bonus you can earn per layout. <br><br> Note: From the <strong>third view onward</strong>, the bonus starts to decrease.",
+            message: "<strong>Earned Money</strong> is the amount you've collected so far.<br><strong>Potential Bonus</strong> is the extra bonus you can earn for this layout. <br><br> Note: From the <strong>third view onward</strong>, the bonus begins to decrease.",
             position: "top",
             highlight: "money-display"
           },
           {
-            message: "<strong style='color:red;'>Click</strong> the <strong>Select Layout</strong> button to reveal the <strong>layout options</strong>. There, you can select the layout that best matches what you've seen.",
+            message: "<strong style='color:red;'>Click</strong> the <strong>Select Layout</strong> button now to continue.",
             position: "top",
             highlight: "ready-btn"
           },
           {
-            message: "<strong style='color:red;'>Important!</strong> Once you've opened the layout choices, you can no longer return to the panoramas.",
+            message: "Use this button <strong>only</strong> when you’ve formed a mental image of the floor plan and feel confident it matches what you’ve seen.",
+            position: "top",
+            highlight: "ready-btn"
+          },
+          {
+            message: "<strong style='color:red;'>Important!</strong> Once you open the layout choices, you can no longer return to the panoramas.",
             position: "center"
           },
           {
-            message: "Your goal is to identify the correct layout that matches what you’ve seen. <br>If your choice is correct, you'll earn the bonus!",
+            message: "Your <strong>goal</strong> is to <strong>correctly identify</strong> the layout based on the views you've explored. <br>If your choice is correct, you'll earn the bonus!",
             position: "center"
           },
           {
@@ -1922,12 +1925,50 @@
         // Function to show tutorial step
         function showTutorialStep() {
           const step = tutorialSteps[tutorialStep];
-          messageBox.innerHTML = `
-            <div style="margin-bottom: 20px;">${step.message}</div>
-            <button style="padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">
-              Continue
-            </button>
-          `;
+          // messageBox.innerHTML = `
+          //   <div style="margin-bottom: 20px;">${step.message}</div>
+          //   <button style="padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">
+          //     Continue
+          //   </button>
+          // `;
+
+          messageBox.innerHTML = `<div style="margin-bottom: 20px;">${step.message}</div>`;
+
+          if (tutorialStep !== 4) {  // Change this index to match your "Select Layout" step
+            const btn = document.createElement('button');
+            btn.textContent = 'Continue';
+            btn.style.padding = '10px 20px';
+            btn.style.backgroundColor = '#007bff';
+            btn.style.color = 'white';
+            btn.style.border = 'none';
+            btn.style.borderRadius = '5px';
+            btn.style.cursor = 'pointer';
+            // btn.style.marginTop = '20px';
+            messageBox.appendChild(btn);
+
+            btn.onclick = () => {
+              if (step.highlight) {
+                const element = document.querySelector(`.${step.highlight}`);
+                if (element) element.style.boxShadow = '';
+              }
+              tutorialStep++;
+              showTutorialStep();
+            };
+          } else {
+            // Wait for user to click the "Select Layout" button (readyBtn)
+            const readyBtn = document.getElementById('readyBtn');
+            const onReadyClick = () => {
+              if (step.highlight) {
+                const element = document.querySelector(`.${step.highlight}`);
+                if (element) element.style.boxShadow = '';
+              }
+              readyBtn.removeEventListener('click', onReadyClick); // Clean up
+              tutorialStep++;
+              showTutorialStep();
+            };
+            readyBtn.addEventListener('click', onReadyClick);
+          }
+
 
           // Reset any previous positioning
           messageBox.style.top = '';
@@ -2065,7 +2106,7 @@
             let baseMessage = "<strong style='color:red;'>Reminder:</strong> Once you click <strong>Select Layout</strong> button, you won’t be able to view the panoramas again.<br>"
 
             if (tut_viewIndex === 0 && !reminderShown && !tut_isRevisitPhase) {
-              baseMessage += `<br><strong style="color:red;">Tip:</strong> It's impossible to identify the correct layout in this example from just the first view. <br>Please consider exploring another view using the <strong>Next View</strong> button before selecting.`;
+              baseMessage += `<br><strong style="color:red;">Tip:</strong> It's impossible to identify the correct layout in this example from just the first view. <br>To improve your chances, click <strong>Cancel</strong> and explore another view using <strong>Next View</strong> button.`;
               // reminderShown = true;
             }
 
