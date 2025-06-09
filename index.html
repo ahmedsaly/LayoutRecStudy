@@ -53,6 +53,9 @@
       --blur-effect: blur(2px);
     }
     
+    html {
+      zoom: 100%;
+    }
     /* ----------------------
        Base Styles
     ---------------------- */
@@ -339,6 +342,46 @@
       cursor: default;
       transition: opacity 0s ease-in-out;
     }
+
+    .ready-btn {
+      position: fixed;
+      /* bottom: 20px; */
+      bottom: 2vh;
+      /* left: 50%; */
+      transform: translateX(-50%);
+      /* padding: 12px 68px; */
+      padding: 0.45em 3.5em;   
+      font-size: 1.2rem; /* larger font */
+      background-color: rgba(255, 255, 255, 0.1);
+      border: none;
+      border-radius: 0.5rem;
+      color: var(--text-color);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      z-index: 1001;
+      backdrop-filter: var(--blur-effect);
+      width: fit-content;
+    }
+
+    .ready-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .ready-btn.complete {
+      background-color: rgba(40, 167, 69, 0.2);
+      color: var(--text-color);
+    }
+
+    .ready-btn.complete:not(:disabled):hover {
+      background-color: rgba(40, 167, 69, 0.3);
+      /* transform: scale(1.05); */
+      transform: translateX(-50%) scale(1.05); /* fix centering */
+    }
+
+    /* Remove hover-trigger styles */
+    .hover-trigger { display: none !important; }
 
     /* ----------------------
       Bottom Panel Section
@@ -636,8 +679,8 @@
     let tut_currentViewedAngles = new Set();
     let viewCost = 0.10;
     let tut_viewCost = 0.10;
-    let baseMoney = 4.00;
-    let tut_baseMoney = 4.00;
+    let baseMoney = 3.00;
+    let tut_baseMoney = 3.00;
     let maxBonus = 0.80;
     let tut_maxBonus = 0.80;
     // let tut_viewsTaken = 0;
@@ -667,11 +710,25 @@
     let tut_isRevisitPhase = false;
     let tut_viewsForBonus = 0;  // Tracks views that deduct from bonus
     let tut_totalViewsViewed = 1;
+    let tut_viewer = null;
+    let act_viewer = null;
+
+
+    const experimentKeyMap = {
+      "z8fj": 1,
+      "r0xl": 2,
+      "b2tk": 3,
+      "n3qv": 4,
+      "w7sd": 5
+    };
 
     // Get experiment key from URL (1-5)
     const urlParams = new URLSearchParams(window.location.search);
-    const experimentKey = parseInt(urlParams.get('exp'));
-    const subject_id = urlParams.get('id');
+    // const experimentKey = parseInt(urlParams.get('exp'));
+    const experimentKeyParam = urlParams.get("exp");
+    const experimentKey = experimentKeyMap[experimentKeyParam];
+    const subject_id = urlParams.get('PROLIFIC_PID');
+
 
     // Define valid experiment keys
     const validExperimentKeys = [1, 2, 3, 4, 5];
@@ -934,7 +991,6 @@
       type: jsPsychBrowserCheck,
       data: { task: "browser_info" },
     };
-
     timeline.unshift(browser_block);
 
     // console.log(jsPsych.data.get().values());
@@ -962,7 +1018,6 @@
       show_progress_bar: true,
       continue_after_error: true
     };
-    
     timeline.push(preload);
 
     /* define welcome message trial */
@@ -1388,12 +1443,12 @@
     const tut_updateMoneyDisplay = () => {
       const tut_currentBonus = (tut_maxBonus - tut_viewsForBonus * tut_viewCost).toFixed(2);
       const tut_moneyDisplay = document.querySelector('.money-display');
-      const tut_previousBonus = tut_moneyDisplay.querySelector('.bonus-value')?.textContent.replace('+€', '');
+      const tut_previousBonus = tut_moneyDisplay.querySelector('.bonus-value')?.textContent.replace('+£', '');
       
       // Create new bonus value element
       const tut_bonusValue = document.createElement('span');
       tut_bonusValue.className = 'money-value bonus-value';
-      tut_bonusValue.textContent = `+€${tut_currentBonus}`;
+      tut_bonusValue.textContent = `+£${tut_currentBonus}`;
       
       // Add animation class if bonus decreased
       if (tut_previousBonus && parseFloat(tut_currentBonus) < parseFloat(tut_previousBonus)) {
@@ -1403,7 +1458,7 @@
       tut_moneyDisplay.innerHTML = `
         <div class="money-item">
           <span class="money-label">Earned Money: &nbsp;</span>
-          <span class="money-value">€${tut_totalEarned.toFixed(2)}</span>
+          <span class="money-value">£${tut_totalEarned.toFixed(2)}</span>
         </div>
         <div class="money-item">
           <span class="money-label">Potential Bonus: </span>
@@ -1440,6 +1495,7 @@
       // Disable all user interactions
       viewer.OrbitControls.enabled = false;
       viewer.OrbitControls.enableZoom = false;
+      viewer.OrbitControls.noZoom = true;
       viewer.OrbitControls.enablePan = false;
       viewer.OrbitControls.enableRotate = false;
 
@@ -1496,7 +1552,10 @@
         enableDamping : true,      // adds smoothness
         output: 'stereo'  // Enable stereo rendering for better fullscreen experience
       });
+      tut_viewer = viewer;
       viewer.add(pano);
+
+      // console.log(viewer.OrbitControls);
 
       viewer.OrbitControls.enableZoom = false; // Disable all zoom
       viewer.OrbitControls.noZoom = true;
@@ -1559,6 +1618,9 @@
       document.getElementById('nextViewBtn').disabled = true;
       document.getElementById('nextViewBtn').style.cursor = ('not-allowed');
       document.getElementById('nextViewBtn').title = "Turn around and view the entire scene to enable the Next button";
+      document.getElementById('readyBtn').disabled = true;
+      document.getElementById('readyBtn').style.cursor = ('not-allowed');
+      document.getElementById('readyBtn').title = "Turn around 360° to explore the entire scene first.";
       const submitBtn = document.getElementById('submitBtn');
       submitBtn.disabled = true;
       const feedbackDiv = document.querySelector(".feedback-text");
@@ -1626,6 +1688,12 @@
             tut_progressCompletionTimes.push(completionTime);
             hasRecordedCompletionTime = true;
           }
+
+          document.getElementById('readyBtn').disabled = false;
+          document.getElementById('readyBtn').title = "You can now select the layout that matches what you've seen";
+          document.getElementById('readyBtn').classList.add('complete');
+          document.getElementById('readyBtn').style.cursor = '';
+          document.getElementById('readyBtn').style.backgroundColor = '';
 
           // Only enable the Next View button if there are more views available
           if (tut_viewIndex < test_layout[tut_currentLayoutIndex].tut_panoramas.length - 1) {
@@ -1721,11 +1789,11 @@
             <div class="money-display">
               <div style="margin: 0.5vh 0;">
                 <span style="color: rgba(255, 255, 255, 0.9);">Earned Money: &nbsp</span>
-                <span style="color: #28a745; font-weight: bold; font-size: 1.2em;"> €€</span>
+                <span style="color: #28a745; font-weight: bold; font-size: 1.2em;"> ££</span>
               </div>
               <div style="margin: 0.5vh 0;">
                 <span style="color: rgba(255, 255, 255, 0.9);">Potential Bonus: </span>
-                <span style="color: rgba(255, 255, 255, 0.9); font-size: 1.2em;">+€€</span>
+                <span style="color: rgba(255, 255, 255, 0.9); font-size: 1.2em;">+££</span>
               </div>
             </div>
             <button id="nextViewBtn" class="next-view-btn" disabled title="Turn around and view the entire scene to enable the Next button">
@@ -1734,7 +1802,7 @@
           </div>
           <div id="panorama" class="panorama-container">
           </div>
-          <div class="hover-trigger"></div>
+          <button id="readyBtn" class="ready-btn">Select Layout</button>
           <div class="bottom-section">
             <div id="layout-container">
               <p>Select the layout you think is correct:</p>
@@ -1769,6 +1837,13 @@
         const panoDiv = document.getElementById('panorama');
         renderStaticPanorama(test_layout[0].tut_panoramas[0], panoDiv);
 
+        const readyBtn = document.getElementById('readyBtn');
+        readyBtn.addEventListener('click', function() {
+          const bottomSection = document.querySelector('.bottom-section');
+          bottomSection.classList.add('visible', 'fixed');
+          this.style.display = 'none'; // Hide button after click
+        });
+
         // Initialize tutorial state
         let tutorialStep = 0;
         const tutorialSteps = [
@@ -1776,26 +1851,30 @@
             message: "Welcome to the tutorial! This will show you how to complete the upcoming tasks.",
           },
           {
-            message: "This is a <strong>panoramic view</strong> of a layout. Later, you can use your mouse (click and drag) or arrow keys to look around.",
+            message: "This is a <strong>360 panoramic view</strong> of a layout. Later, you can use your mouse (click and drag) or arrow keys to look around.",
             highlight: "panorama-container"
           },
           {
-            message: "Once you've viewed the whole scene, the <strong>Next View</strong> button will become available. Use it to see another view of the same layout.",
+            message: "Once you've explored a full 360° view, the <strong>Next View</strong> button will become available. Use it to see another view of the same layout.",
             position: "top",
             highlight: "next-view-btn"
           },
           {
-            message: "<strong>Earned Money</strong> is the amount you've collected so far.<br><strong>Potential Bonus</strong> is the extra bonus you can earn per layout. <br><br> Note: From the third view onward, the bonus starts to decrease.",
+            message: "<strong>Earned Money</strong> is the amount you've collected so far.<br><strong>Potential Bonus</strong> is the extra bonus you can earn per layout. <br><br> Note: From the <strong>third view onward</strong>, the bonus starts to decrease.",
             position: "top",
             highlight: "money-display"
           },
           {
-            message: "Move your mouse to the bottom of the screen to reveal the <strong>layout options</strong>. There, you can select the layout that best matches what you've seen.",
+            message: "<strong style='color:red;'>Click</strong> the <strong>Select Layout</strong> button to reveal the <strong>layout options</strong>. There, you can select the layout that best matches what you've seen.",
             position: "top",
-            highlight: "hover-trigger"
+            highlight: "ready-btn"
           },
           {
-            message: "Your goal is to identify the layout that matches what you’ve seen. <br>If your choice is correct, you'll earn the bonus!",
+            message: "<strong style='color:red;'>Important!</strong> Once you've opened the layout choices, you can no longer return to the panoramas.",
+            position: "center"
+          },
+          {
+            message: "Your goal is to identify the correct layout that matches what you’ve seen. <br>If your choice is correct, you'll earn the bonus!",
             position: "center"
           },
           {
@@ -1928,11 +2007,18 @@
             <button id="revisitBtn" class="next-view-btn" 
                     style="display: none; margin-top: 10px;" 
                     title="-€0.10 to review all previously seen views">
-              Revisit All Views (-€${viewCost.toFixed(2)})
+              Revisit All Views (-£${viewCost.toFixed(2)})
             </button>
           </div>
           <div id="panorama"></div>
-          <div class="hover-trigger"></div>
+          <button id="readyBtn" class="ready-btn">Select Layout</button>
+          <div id="readyModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color: rgba(0,0,0,0.6); z-index:2000; justify-content:center; align-items:center;">
+            <div style="background:white; padding:20px 30px; border-radius:10px; max-width:500px; text-align:center; font-family:sans-serif;">
+              <p id="readyModalText" style="margin-bottom:20px; font-size:16px;"></p>
+              <button id="readyModalCancel" style="margin-right:10px;">Cancel</button>
+              <button id="readyModalConfirm" style="background-color:green; color:white;">Select Layout</button>
+            </div>
+          </div>
           <div class="bottom-section">
             <div id="layout-container">
               <p>Select the layout you think is correct:</p>
@@ -1966,48 +2052,47 @@
 
         // Add event listeners for bottom section and hover trigger interaction
         const bottomSection = document.querySelector('.bottom-section');
-        const hoverTrigger = document.querySelector('.hover-trigger');
 
-        bottomSection.addEventListener('mouseenter', () => {
-          hoverTrigger.classList.add('hidden');
-        });
+        // Add button click handler
+        const readyBtn = document.getElementById('readyBtn');
+        readyBtn.addEventListener('click', function() {
+          const bottomSection = document.querySelector('.bottom-section');
+          if (readyBtn.classList.contains('complete')) {
+            const modal = document.getElementById("readyModal");
+            const messageBox = document.getElementById("readyModalText");
 
-        bottomSection.addEventListener('mouseleave', () => {
-          hoverTrigger.classList.remove('hidden');
-        });
+            // let baseMessage = "After clicking Continue, you will not be able to view the panoramas again. You must choose the correct layout from memory.";
+            let baseMessage = "<strong style='color:red;'>Reminder:</strong> Once you click <strong>Select Layout</strong> button, you won’t be able to view the panoramas again.<br>"
 
-        document.addEventListener('mousemove', (e) => {
-          const hoverTriggerRect = hoverTrigger.getBoundingClientRect();
-          const isHovering = e.clientY >= hoverTriggerRect.top && 
-                            e.clientX >= hoverTriggerRect.left && 
-                            e.clientX <= hoverTriggerRect.right;
+            if (tut_viewIndex === 0 && !reminderShown && !tut_isRevisitPhase) {
+              baseMessage += `<br><strong style="color:red;">Tip:</strong> It's impossible to identify the correct layout in this example from just the first view. <br>Please consider exploring another view using the <strong>Next View</strong> button before selecting.`;
+              // reminderShown = true;
+            }
 
-          if (isHovering || bottomSection.matches(':hover')) {
-            bottomSection.classList.add('visible');
-            hoverTrigger.classList.add('hidden');
-          } else {
-            bottomSection.classList.remove('visible');
-            hoverTrigger.classList.remove('hidden');
+            messageBox.innerHTML = baseMessage;
+            modal.style.display = "flex";
+
+            document.getElementById("readyModalCancel").addEventListener("click", () => {
+              document.getElementById("readyModal").style.display = "none";
+            });
+
+            document.getElementById("readyModalConfirm").addEventListener("click", () => {
+              document.getElementById("readyModal").style.display = "none";
+              bottomSection.classList.add('visible', 'fixed');
+              this.style.display = 'none'; // Hide button after click
+              // logAreaChange('bottom-section');
+
+              document.getElementById('nextViewBtn').disabled = true;
+              document.getElementById('revisitBtn').style.display = 'none';
+              document.getElementById('nextViewBtn').title = '';
+
+              // Disable panorama interaction
+              if (tut_viewer && tut_viewer.OrbitControls) {
+                tut_viewer.OrbitControls.enabled = false;
+              }
+            });
           }
-        })
-
-        // Add visibility check on page load and after transitions
-        const checkHoverTriggerVisibility = () => {
-          const bottomSectionRect = bottomSection.getBoundingClientRect();
-          const hoverTriggerRect = hoverTrigger.getBoundingClientRect();
-          
-          if (bottomSectionRect.top < window.innerHeight) {
-            hoverTrigger.classList.add('hidden');
-          } else {
-            hoverTrigger.classList.remove('hidden');
-          }
-        };
-
-        // Check visibility on page load
-        checkHoverTriggerVisibility();
-
-        // Check visibility after bottom section transitions
-        bottomSection.addEventListener('transitionend', checkHoverTriggerVisibility);
+        });
 
         // Initialize panorama
         const panoDiv = document.getElementById('panorama');
@@ -2217,18 +2302,18 @@
             return;
           }
 
-          // Check if this is the first view and reminder hasn't been shown yet
-          if (tut_viewIndex === 0 && !reminderShown && !tut_isRevisitPhase) {
-            messageDiv.innerHTML = `
-              <div class="reminder-message">
-                <p style="color: #e63946;">It's impossible to identify the correct layout from just the first view. Try viewing the second view by clicking the <strong>Next View</strong> button.</p>
-              </div>
-            `;
-            messageDiv.style.display = "block";
-            reminderShown = true;  // Set the flag to true
+          // // Check if this is the first view and reminder hasn't been shown yet
+          // if (tut_viewIndex === 0 && !reminderShown && !tut_isRevisitPhase) {
+          //   messageDiv.innerHTML = `
+          //     <div class="reminder-message">
+          //       <p style="color: #e63946;">It's impossible to identify the correct layout from just the first view. Try viewing the second view by clicking the <strong>Next View</strong> button.</p>
+          //     </div>
+          //   `;
+          //   messageDiv.style.display = "block";
+          //   reminderShown = true;  // Set the flag to true
 
-            return; 
-          }
+          //   return; 
+          // }
 
           // Check if confidence is already selected
           const confidenceContainer = messageDiv.querySelector('.confidence-container');
@@ -2376,7 +2461,7 @@
                   tut_moneyDisplay.innerHTML = `
                     <div class="money-item">
                       <span class="money-label">Earned Money: </span>
-                      <span class="money-value">€${tut_totalEarned.toFixed(2)}</span>
+                      <span class="money-value">£${tut_totalEarned.toFixed(2)}</span>
                     </div>
                     <div class="money-item">
                       <span class="money-label">Potential Bonus: </span>
@@ -2433,29 +2518,15 @@
                       // bottomSection.style.bottom = '-100%';  // Force collapse
                       bottomSection.classList.remove('visible');
                           
-                      // Reset the hover behavior after a short delay (after transition)
-                      setTimeout(() => {
-                          bottomSection.style.bottom = '';  // Remove inline style to restore CSS transitions
-                          
-                          bottomSection.style.transition = 'bottom 0.3s ease-in-out';  // Restore original transition
 
-                          // Show and reset the hover trigger
-                          const hoverTrigger = document.querySelector('.hover-trigger');
-                          hoverTrigger.style.display = 'flex';
-                          hoverTrigger.classList.remove('hidden');
-
-                          // Re-add hover event listeners
-                          hoverTrigger.addEventListener('mouseenter', () => {
-                              // bottomSection.style.bottom = '0';
-                              bottomSection.classList.add('visible');
-                          });
-                          
-                          bottomSection.addEventListener('mouseleave', () => {
-                              // bottomSection.style.bottom = '-100%';
-                              bottomSection.classList.remove('visible');
-                              // logAreaChange(null); // Will log exit from bottom-section
-                          });
-                      }, 30);  // Delay matches the CSS transition time
+                      // Add button click handler
+                      const readyBtn = document.getElementById('readyBtn');
+                      readyBtn.addEventListener('click', function() {
+                        const bottomSection = document.querySelector('.bottom-section');
+                        bottomSection.classList.add('visible', 'fixed');
+                        this.style.display = 'none'; // Hide button after click
+                        // logAreaChange('bottom-section');
+                      });
 
                       document.querySelector(".feedback-text").textContent = "";
                       document.querySelectorAll(".layout-img").forEach(img => {
@@ -2601,12 +2672,12 @@
     const updateMoneyDisplay = () => {
       const currentBonus = (maxBonus - viewsForBonus * viewCost).toFixed(2);
       const moneyDisplay = document.querySelector('.money-display');
-      const previousBonus = moneyDisplay.querySelector('.bonus-value')?.textContent.replace('+€', '');
+      const previousBonus = moneyDisplay.querySelector('.bonus-value')?.textContent.replace('+£', '');
       
       // Create new bonus value element
       const bonusValue = document.createElement('span');
       bonusValue.className = 'money-value bonus-value';
-      bonusValue.textContent = `+€${currentBonus}`;
+      bonusValue.textContent = `+£${currentBonus}`;
       
       // Add animation class if bonus decreased
       if (previousBonus && parseFloat(currentBonus) < parseFloat(previousBonus)) {
@@ -2616,7 +2687,7 @@
       moneyDisplay.innerHTML = `
         <div class="money-item">
           <span class="money-label">Earned Money: &nbsp;</span>
-          <span class="money-value">€${totalEarned.toFixed(2)}</span>
+          <span class="money-value">£${totalEarned.toFixed(2)}</span>
         </div>
         <div class="money-item">
           <span class="money-label">Potential Bonus: </span>
@@ -2643,6 +2714,7 @@
         enableDamping : true,      // adds smoothness
         output: 'stereo'  // Enable stereo rendering for better fullscreen experience
       });
+      act_viewer = viewer;
       viewer.add(pano);
 
       viewer.OrbitControls.enableZoom = false; // Disable all zoom
@@ -2706,6 +2778,9 @@
       document.getElementById('nextViewBtn').disabled = true;
       document.getElementById('nextViewBtn').style.cursor = ('not-allowed');
       document.getElementById('nextViewBtn').title = "Turn around and view the entire scene to enable the Next button";
+      document.getElementById('readyBtn').disabled = true;
+      document.getElementById('readyBtn').style.cursor = ('not-allowed');
+      document.getElementById('readyBtn').title = "Turn around 360° to explore the entire scene first.";
       const submitBtn = document.getElementById('submitBtn');
       submitBtn.disabled = true;
       const feedbackDiv = document.querySelector(".feedback-text");
@@ -2773,6 +2848,12 @@
             progressCompletionTimes.push(completionTime);
             hasRecordedCompletionTime = true;
           }
+
+          document.getElementById('readyBtn').disabled = false;
+          document.getElementById('readyBtn').title = "You can now select the layout that matches what you've seen";
+          document.getElementById('readyBtn').classList.add('complete');
+          document.getElementById('readyBtn').style.cursor = '';
+          document.getElementById('readyBtn').style.backgroundColor = '';
 
           // Only enable the Next View button if there are more views available
           if (viewIndex < layouts[currentLayoutIndex].panoramas.length - 1) {
@@ -2879,11 +2960,11 @@
             <button id="revisitBtn" class="next-view-btn" 
                     style="display: none; margin-top: 10px;" 
                     title="-€0.10 to review all previously seen views">
-              Revisit All Views (-€${viewCost.toFixed(2)})
+              Revisit All Views (-£${viewCost.toFixed(2)})
             </button>
           </div>
           <div id="panorama"></div>
-          <div class="hover-trigger"></div>
+          <button id="readyBtn" class="ready-btn">Select Layout</button>
           <div class="bottom-section">
             <div id="layout-container">
               <p>Select the layout you think is correct:</p>
@@ -2892,7 +2973,7 @@
               </div>
             </div>
             <div class="potential-bonus-message">
-              If you choose the correct answer, you will earn an extra bonus of €<span class="bonus-amount">${(maxBonus - viewsForBonus * viewCost).toFixed(2)}</span>
+              If you choose the correct answer, you will earn an extra bonus of £<span class="bonus-amount">${(maxBonus - viewsForBonus * viewCost).toFixed(2)}</span>
             </div>
             <div class="feedback-text"></div>
             <div id="message" class="message-container"></div>
@@ -2918,52 +2999,28 @@
 
         // Add event listeners for bottom section and hover trigger interaction
         const bottomSection = document.querySelector('.bottom-section');
-        const hoverTrigger = document.querySelector('.hover-trigger');
 
-        bottomSection.addEventListener('mouseenter', () => {
-          hoverTrigger.classList.add('hidden');
-          logAreaChange('bottom-section');
-        });
+        // Add button click handler
+        const readyBtn = document.getElementById('readyBtn');
+        readyBtn.addEventListener('click', function() {
+          const bottomSection = document.querySelector('.bottom-section');
+          if (readyBtn.classList.contains('complete')) {
+            bottomSection.classList.add('visible', 'fixed');
+            this.style.display = 'none'; // Hide button after click
+            logAreaChange('bottom-section');
 
-        bottomSection.addEventListener('mouseleave', () => {
-          hoverTrigger.classList.remove('hidden');
-          if (!isTransitioningLayout) {  // Only log if we're not transitioning
-            logAreaChange(null);
+            document.getElementById('nextViewBtn').disabled = true;
+            document.getElementById('nextViewBtn').style.opacity = '0.5';
+            document.getElementById('nextViewBtn').title = '';
+
+            document.getElementById('revisitBtn').style.display = 'none';
+
+            // Disable panorama interaction
+            if (act_viewer && act_viewer.OrbitControls) {
+              act_viewer.OrbitControls.enabled = false;
+            }
           }
         });
-
-        document.addEventListener('mousemove', (e) => {
-          const hoverTriggerRect = hoverTrigger.getBoundingClientRect();
-          const isHovering = e.clientY >= hoverTriggerRect.top && 
-                            e.clientX >= hoverTriggerRect.left && 
-                            e.clientX <= hoverTriggerRect.right;
-
-          if (isHovering || bottomSection.matches(':hover')) {
-            bottomSection.classList.add('visible');
-            hoverTrigger.classList.add('hidden');
-          } else {
-            bottomSection.classList.remove('visible');
-            hoverTrigger.classList.remove('hidden');
-          }
-        })
-
-        // Add visibility check on page load and after transitions
-        const checkHoverTriggerVisibility = () => {
-          const bottomSectionRect = bottomSection.getBoundingClientRect();
-          const hoverTriggerRect = hoverTrigger.getBoundingClientRect();
-          
-          if (bottomSectionRect.top < window.innerHeight) {
-            hoverTrigger.classList.add('hidden');
-          } else {
-            hoverTrigger.classList.remove('hidden');
-          }
-        };
-
-        // Check visibility on page load
-        checkHoverTriggerVisibility();
-
-        // Check visibility after bottom section transitions
-        bottomSection.addEventListener('transitionend', checkHoverTriggerVisibility);
 
         // Initialize panorama
         const panoDiv = document.getElementById('panorama');
@@ -3313,12 +3370,12 @@
 
                   // Show feedback
                   if (isCorrect) {
-                    feedbackDiv.innerHTML = `<span class="feedback-correct">Correct! Well done!</span><br><br><span>Your total earned money is €${totalEarned.toFixed(2)}</span>`;
+                    feedbackDiv.innerHTML = `<span class="feedback-correct">Correct! Well done!</span><br><br><span>Your total earned money is £${totalEarned.toFixed(2)}</span>`;
                     feedbackDiv.className = "feedback-text";
                     document.querySelector(`.layout-img[data-choice="${selectedLayout}"]`).classList.add("correct");
                   } 
                   else {
-                    feedbackDiv.innerHTML = `<span class="feedback-incorrect">Incorrect. The correct layout is ${currentLayout.correctAnswer}.</span><br><br><span>Your total earned money is €${totalEarned.toFixed(2)}</span>`;
+                    feedbackDiv.innerHTML = `<span class="feedback-incorrect">Incorrect. The correct layout is ${currentLayout.correctAnswer}.</span><br><br><span>Your total earned money is £${totalEarned.toFixed(2)}</span>`;
                     feedbackDiv.className = "feedback-text";
                     document.querySelector(`.layout-img[data-choice="${selectedLayout}"]`).classList.add("incorrect");
                     document.querySelector(`.layout-img[data-choice="${currentLayout.correctAnswer}"]`).classList.add("correct");
@@ -3329,7 +3386,7 @@
                   moneyDisplay.innerHTML = `
                     <div class="money-item">
                       <span class="money-label">Earned Money: </span>
-                      <span class="money-value">€${totalEarned.toFixed(2)}</span>
+                      <span class="money-value">£${totalEarned.toFixed(2)}</span>
                     </div>
                     <div class="money-item">
                       <span class="money-label">Potential Bonus: </span>
@@ -3350,6 +3407,7 @@
                         
                       // Restore original buttons
                       document.getElementById('nextViewBtn').style.display = 'block';
+                      document.getElementById('readyBtn').style.display = 'block';
                       document.getElementById('revisitBtn').style.display = 'none';
 
                       currentLayoutIndex++;
@@ -3383,6 +3441,13 @@
                       nextView.style.pointerEvents = 'auto';
                       nextView.style.opacity = '1';
                       nextView.classList.remove('complete');
+
+                      document.getElementById('readyBtn').disabled = true;
+                      // document.getElementById('readyBtn').textContent = 'Next View'
+                      document.getElementById('readyBtn').title = "Turn around 360° to explore the entire scene first.";
+                      readyBtn.classList.remove('complete');
+                      readyBtn.style.backgroundColor = '';  // Reset to default
+                      readyBtn.style.cursor = ''; 
                       
                       // Remove fixed class from bottom section to restore normal behavior
                       const bottomSection = document.querySelector('.bottom-section');
@@ -3391,31 +3456,6 @@
                       // bottomSection.style.bottom = '-100%';  // Force collapse
                       bottomSection.classList.remove('visible');
                           
-                      // Reset the hover behavior after a short delay (after transition)
-                      setTimeout(() => {
-                        isTransitioningLayout = false;
-                        bottomSection.style.bottom = '';  // Remove inline style to restore CSS transitions
-                        
-                        bottomSection.style.transition = 'bottom 0.3s ease-in-out';  // Restore original transition
-
-                        // Show and reset the hover trigger
-                        const hoverTrigger = document.querySelector('.hover-trigger');
-                        hoverTrigger.style.display = 'flex';
-                        hoverTrigger.classList.remove('hidden');
-
-                        // Re-add hover event listeners
-                        hoverTrigger.addEventListener('mouseenter', () => {
-                            // bottomSection.style.bottom = '0';
-                            bottomSection.classList.add('visible');
-                        });
-                        
-                        bottomSection.addEventListener('mouseleave', () => {
-                            // bottomSection.style.bottom = '-100%';
-                            bottomSection.classList.remove('visible');
-                            // logAreaChange('exit-bottom-section2'); // Will log exit from bottom-section
-                        });
-                      }, 30);  // Delay matches the CSS transition time
-
                       document.querySelector(".feedback-text").textContent = "";
                       document.querySelectorAll(".layout-img").forEach(img => {
                         img.style.pointerEvents = "auto";
@@ -3517,64 +3557,6 @@
     };
     timeline.push(trial_combined);
 
-    const strategy_survey = {
-      type: jsPsychSurveyHtmlForm,
-      // preamble: "<h3>Strategy Questions</h3>",
-      html: `
-        <div style="text-align: left; max-width: 90%; justify-self: center; justify-items: center">
-          <div>
-            <label style="font-size: 1.2em;"><strong>Which of the following strategies mostly describes how you guessed the correct layouts?</strong><br>
-            <span style="font-size: 0.9em;">(Choose the one that fits the best)</span></label><br><br>
-
-            <label style="font-size: 1em;">
-              <input type="radio" name="strategy" value="0" required>
-              <strong>Built a mental map of the space</strong><br>
-              <span style="margin-left: 25px; font-size: 0.95em; font-weight: normal;">I explored the views and mentally connected them to form a layout in my mind, then chose the option that matched what I imagined.</span>
-            </label><br><br>
-
-            <label style="font-size: 1em;">
-              <input type="radio" name="strategy" value="1" >
-              <strong>Focused on checking specific features</strong><br>
-              <span style="margin-left: 25px; font-size: 0.95em; font-weight: normal;">I didn’t try to form a full layout. I just looked for key features (like shapes, walls, objects, or openings) in each view to rule out incorrect options.</span>
-            </label><br><br>
-
-            <label style="font-size: 1em;">
-              <input type="radio" name="strategy" value="2">
-              <strong>Used a mix of both</strong><br>
-              <span style="margin-left: 25px; font-size: 0.95em; font-weight: normal;">I sometimes imagined the layout, and other times focused on specific features to help me decide.</span>
-            </label><br><br>
-
-            <label style="font-size: 1em;">
-              <input type="radio" name="strategy" value="3" id="other-option">
-              <strong>Other</strong><br>
-              <textarea name="comments" id="other-comments" rows="3" style="margin-left: 25px; width: 90%; display: none;" placeholder="Please describe your strategy here..."></textarea>
-            </label><br>
-          </div>
-        </div>
-      `,
-
-      on_load: function () {
-        // Show text box only when "Other" is selected
-        document.querySelectorAll('input[name="strategy"]').forEach(radio => {
-          radio.addEventListener('change', function () {
-            const commentBox = document.getElementById('other-comments');
-            commentBox.style.display = (this.value === '3') ? 'block' : 'none';
-          });
-        });
-      },
-      on_finish: function(data) {
-        const form = new URLSearchParams(data.response);
-        data.strategy = parseInt(form.get("strategy"));
-          // Decode multiline comments safely
-        const raw = form.get("comments") || "";
-        const decoded = decodeURIComponent(raw.replace(/\+/g, ' '));
-
-        // Replace line breaks with space or another safe separator
-        data.comment = decoded.replace(/(\r\n|\n|\r)/g, ' ').trim();
-      }
-    };
-    timeline.push(strategy_survey);
-
     const sketch_survey = {
       type: jsPsychSurveyHtmlForm,
 
@@ -3612,10 +3594,7 @@
         end_time: trial.end_time,
         time_elapsed: trial.time_elapsed,
         totalEarned: trial.totalEarned,
-        strategy: trial.strategy,
-        strategy_comment: trial.comment,    
         sketched: trial.sketch,    
-
         browser: trial.browser,
         os: trial.os,
         mobile: trial.mobile,
@@ -3749,12 +3728,12 @@
       type: jsPsychHtmlKeyboardResponse,
       stimulus: function () {
         // Replace this with your actual Prolific completion URL
-        const prolificURL = "https://app.prolific.co/submissions/complete?cc=XXXXXXX";
+        const prolificURL = "https://app.prolific.com/submissions/complete?cc=C1AWM0DJ";
         
         return `
           <div class="welcome-message">
             <h2>Thank you!</h2>
-            <p>Total earned: <strong>€${totalEarned.toFixed(2)}</strong></p>
+            <p>Total earned: <strong>£${totalEarned.toFixed(2)}</strong></p>
             <p>You will be redirected back to Prolific in <span id="countdown">10</span> seconds.</p>
             <p style="margin-top: 20px; font-size: 0.9em;">
               If you are not redirected automatically, please click or copy this link:<br>
