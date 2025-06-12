@@ -1075,7 +1075,7 @@
           name: "PTT Instructions"
         }
     };
-    // timeline.push(PTT_instruction );
+    timeline.push(PTT_instruction );
 
     // Define the task parameters
     const TASK_ITEMS = [
@@ -1159,7 +1159,7 @@
         });
       }
     };
-    // timeline.push(PTT_example);
+    timeline.push(PTT_example);
 
     const PTT = {
       type: jsPsychHtmlButtonResponse,
@@ -1316,7 +1316,7 @@
         });
       },      
     };
-    // timeline.push(PTT);
+    timeline.push(PTT);
 
     // Helper function to draw the circle and lines
     function drawCircle(ctx, task, angle = null) {
@@ -2722,7 +2722,7 @@
 
       return [headers, ...rows].join("\n");
     });
-    // timeline.push(save_tutorial_data);
+    timeline.push(save_tutorial_data);
 
     let currentLayoutIndex = 0;
     let totalEarned = baseMoney;
@@ -3661,7 +3661,7 @@
         data.sketch = parseInt(form.get("sketch"));
       }
     };
-    // timeline.push(sketch_survey);
+    timeline.push(sketch_survey);
 
     // After your last trial (after trial_combined), add the save data trial:
     const save_data = saveData(filename, () => {
