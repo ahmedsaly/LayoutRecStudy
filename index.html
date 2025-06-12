@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Layout Recognition Study</title>
+  <title>Building Recognition Study</title>
 
    <!-- jsPsych and Plugins -->
   <link rel="stylesheet" href="https://unpkg.com/jspsych@8.2.1/css/jspsych.css" />
@@ -762,21 +762,21 @@
     // Attach it once globally
     window.addEventListener('beforeunload', beforeUnloadHandler);
 
-    // // Prevent repeat participation in the same browser
-    // const localKey = `layout_exp_started_${subject_id}`;
+    // Prevent repeat participation in the same browser
+    const localKey = `layout_exp_started_${subject_id}`;
 
-    // if (localStorage.getItem(localKey)) {
-    //   // alert("You have already started this study in this browser. Restarting is not allowed.");
-    //   document.body.innerHTML = `
-    //     <div style="text-align:center; padding-top: 20vh;">
-    //       <h2 style="color: red;">You cannot restart this study.</h2>
-    //       <p>Please return to Prolific to complete or contact support if this is an error.</p>
-    //     </div>
-    //   `;
-    //   throw new Error("Blocked due to localStorage flag.");
-    // } else {
-    //   localStorage.setItem(localKey, "true");
-    // }
+    if (localStorage.getItem(localKey)) {
+      // alert("You have already started this study in this browser. Restarting is not allowed.");
+      document.body.innerHTML = `
+        <div style="text-align:center; padding-top: 20vh;">
+          <h2 style="color: red;">You cannot restart this study.</h2>
+          <p>Please return to Prolific to complete or contact support if this is an error.</p>
+        </div>
+      `;
+      throw new Error("Blocked due to localStorage flag.");
+    } else {
+      localStorage.setItem(localKey, "true");
+    }
 
     const requiredSections = 4; 
     const getTimestamp = () => new Date().toISOString();
@@ -1049,9 +1049,9 @@
           and pointing to a third. You will indicate the direction 
           by clicking on a circle.</p>
           
-          <h3>Part 2: Layout Recognition</h3>
-          <p>In this part, you will explore five different building layouts. For each one, you’ll view a series of 360° panoramic images taken from various locations inside the layout.</p>
-          <p>Your goal for each layout is to view as many panoramas as needed, mentally integrate them, and then select the floor plan that best matches the space you've reconstructed in your mind.</p>
+          <h3>Part 2: Building Recognition</h3>
+          <p>In this part, you will explore 5 different buildings. For each one, you’ll view a series of 360° panoramic images taken from various locations inside the building.</p>
+          <p>Your goal for each building is to view as many panoramas as needed, mentally integrate them, and then select the floor plan that best matches the space you've reconstructed in your mind.</p>
 
           <p>Press any key to continue.</p>
         </div>
@@ -1417,12 +1417,12 @@
         type: jsPsychHtmlKeyboardResponse,
         stimulus: `
           <div class="test-message">
-          <h2>2. Layout Recognition</h2>
-          <p>In this part, you 'll explore 360° panoramic views of 5 different building layouts. 
+          <h2>2. Building Recognition</h2>
+          <p>In this part, you 'll explore 360° panoramic views of 5 different buildings. 
           You can look around each view by clicking and dragging with your mouse or using the arrow keys.</p>
-          <p>You’ll start each layout with a single 360° view. After that, you can view additional perspectives taken from other locations within the same layout.</p>
-          <p>Your task is to view as many panoramas as needed to form a mental map of the floor, and then select the layout that best matches what you've reconstructed in your mind.</p>
-          <p><strong>Your base payment is guaranteed</strong>, but you can earn a <strong>bonus money</strong> by correctly identifying layouts while using fewer views.</p>
+          <p>You’ll start each building with a single 360° view. After that, you can view additional perspectives taken from other locations within the same building.</p>
+          <p>Your task is to view as many panoramas as needed, mentally integrate them, and then select the floor plan that best matches the space you've reconstructed in your mind.</p>
+          <p><strong>Your base payment is guaranteed</strong>, but you can earn <strong>bonus money</strong> by identifying the correct floor plans while using fewer views.</p>
           <p>First you'll complete a short tutorial, 
           then you'll proceed to the main tasks.</p>
           <p><strong>NOTE:</strong> The tutorial is for practice. It does <strong>not</strong> affect your earnings.</p>
@@ -1688,7 +1688,7 @@
           }
 
           document.getElementById('readyBtn').disabled = false;
-          document.getElementById('readyBtn').title = "You can now select the layout that matches what you've seen";
+          document.getElementById('readyBtn').title = "You can now select the floor plan that matches what you've seen";
           document.getElementById('readyBtn').classList.add('complete');
           document.getElementById('readyBtn').style.cursor = '';
           document.getElementById('readyBtn').style.backgroundColor = '';
@@ -1800,10 +1800,10 @@
           </div>
           <div id="panorama" class="panorama-container">
           </div>
-          <button id="readyBtn" class="ready-btn">Select Layout</button>
+          <button id="readyBtn" class="ready-btn">Select Floor Plan</button>
           <div class="bottom-section">
             <div id="layout-container">
-              <p>Select the layout you think is correct:</p>
+              <p>Select the floor plan you think is correct:</p>
               <div class="layout-options-container">
                 <!-- Layout options will be inserted here dynamically -->
                 <div style="position: relative; margin: 0 1vw;">
@@ -1822,7 +1822,7 @@
             <div class="feedback-text"></div>
             <div id="message" class="message-container"></div>
             <button class="submitBtn">Submit Choice</button>
-            <button id="nextLayoutBtn" style="display: none;">Next Layout</button>
+            <button id="nextLayoutBtn" style="display: none;">Next Building</button>
           </div>
         </div>
       `,
@@ -1849,39 +1849,39 @@
             message: "Welcome to the tutorial! This will show you how to complete the upcoming tasks.",
           },
           {
-            message: "This is a <strong>360 panoramic view</strong> of a layout. <br>Later, you can use your mouse (click and drag) or arrow keys to look around.",
+            message: "This is a <strong>360 panoramic view</strong> of a building. <br>Later, you can use your mouse (click and drag) or arrow keys to look around.",
             highlight: "panorama-container"
           },
           {
-            message: "Once you've explored the <strong>full</strong> 360° view, the <strong>Next View</strong> button will become <strong>active</strong>. Use it to see another view within the same layout.",
+            message: "Once you've explored the <strong>full</strong> 360° view, the <strong>Next View</strong> button will become <strong>active</strong>. Use it to see another view within the same building.",
             position: "top",
             highlight: "next-view-btn"
           },
           {
-            message: "<strong>Earned Money</strong> is the amount you've collected so far.<br><strong>Potential Bonus</strong> is the extra bonus you can earn for this layout. <br><br> Note: From the <strong>third view onward</strong>, the bonus begins to decrease.",
+            message: "<strong>Earned Money</strong> is the amount you've collected so far.<br><strong>Potential Bonus</strong> is the extra bonus you can earn for this building. <br><br> Note: From the <strong>third view onward</strong>, the bonus begins to decrease.",
             position: "top",
             highlight: "money-display"
           },
           {
-            message: "<strong style='color:red;'>Click</strong> the <strong>Select Layout</strong> button now to continue.",
+            message: "<strong style='color:red;'>Click</strong> the <strong>Select Floor Plan</strong> button now to continue.",
             position: "top",
             highlight: "ready-btn"
           },
           {
-            message: "Use this button <strong>only</strong> when you’ve formed a mental image of the floor plan and feel confident it matches what you’ve seen.",
+            message: "Use this button <strong>only</strong> when you’ve mentally integrated the views and feel confident in matching them to a floor plan.",
             position: "top",
             highlight: "ready-btn"
           },
           {
-            message: "<strong style='color:red;'>Important!</strong> Once you open the layout choices, you can no longer return to the panoramas.",
+            message: "<strong style='color:red;'>Important!</strong> Once you open the floor plan choices, you can no longer return to the panoramas.",
             position: "center"
           },
           {
-            message: "Your <strong>goal</strong> is to <strong>correctly identify</strong> the layout based on the views you've explored. <br>If your choice is correct, you'll earn the bonus!",
+            message: "Your <strong>goal</strong> is to <strong>correctly identify</strong> the floor plan based on the views you've explored. <br>If your choice is correct, you'll earn the bonus!",
             position: "center"
           },
           {
-            message: "Now it's your turn! try this example layout to get started.",
+            message: "Now it's your turn! try this example building to get started.",
             position: "center"
           }
         ];
@@ -2052,17 +2052,17 @@
             </button>
           </div>
           <div id="panorama"></div>
-          <button id="readyBtn" class="ready-btn">Select Layout</button>
+          <button id="readyBtn" class="ready-btn">Select Floor Plan</button>
           <div id="readyModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color: rgba(0,0,0,0.6); z-index:2000; justify-content:center; align-items:center;">
             <div style="background:white; padding:20px 30px; border-radius:10px; max-width:500px; text-align:center; font-family:sans-serif;">
               <p id="readyModalText" style="margin-bottom:20px; font-size:16px;"></p>
               <button id="readyModalCancel" style="margin-right:10px;">Cancel</button>
-              <button id="readyModalConfirm" style="background-color:green; color:white;">Select Layout</button>
+              <button id="readyModalConfirm" style="background-color:green; color:white;">Select Floor Plan</button>
             </div>
           </div>
           <div class="bottom-section">
             <div id="layout-container">
-              <p>Select the layout you think is correct:</p>
+              <p>Select the floor plan you think is correct:</p>
               <div class="layout-options-container">
                 <!-- Layout options will be inserted here dynamically -->
               </div>
@@ -2103,10 +2103,10 @@
             const messageBox = document.getElementById("readyModalText");
 
             // let baseMessage = "After clicking Continue, you will not be able to view the panoramas again. You must choose the correct layout from memory.";
-            let baseMessage = "<strong style='color:red;'>Reminder:</strong> Once you click <strong>Select Layout</strong> button, you won’t be able to view the panoramas again.<br>"
+            let baseMessage = "<strong style='color:red;'>Reminder:</strong> Once you click <strong>Select Floor Plan</strong> button, you won’t be able to view the panoramas again.<br>"
 
             if (tut_viewIndex === 0 && !reminderShown && !tut_isRevisitPhase) {
-              baseMessage += `<br><strong style="color:red;">Tip:</strong> It's impossible to identify the correct layout in this example from just the first view. <br>To improve your chances, click <strong>Cancel</strong> and explore another view using <strong>Next View</strong> button.`;
+              baseMessage += `<br><strong style="color:red;">Tip:</strong> It's impossible to identify the correct floor plan in this example from just the first view. <br>To improve your chances, click <strong>Cancel</strong> and explore another view using <strong>Next View</strong> button.`;
               // reminderShown = true;
             }
 
@@ -2162,7 +2162,7 @@
             
             // Hide the "Please select a layout first" message
             const feedbackDiv = document.querySelector(".feedback-text");
-            if (feedbackDiv.textContent === "Please select a layout first.") {
+            if (feedbackDiv.textContent === "Please select a floor plan first.") {
               feedbackDiv.textContent = "";
               feedbackDiv.className = "feedback-text";
             }
@@ -2289,7 +2289,7 @@
             
             // Hide the "Please select a layout first" message
             const feedbackDiv = document.querySelector(".feedback-text");
-            if (feedbackDiv.textContent === "Please select a layout first.") {
+            if (feedbackDiv.textContent === "Please select a floor plan first.") {
               feedbackDiv.textContent = "";
               feedbackDiv.className = "feedback-text";
             }
@@ -2338,7 +2338,7 @@
           const tut_currentLayout = test_layout[tut_currentLayoutIndex];
           
           if (!tut_selectedLayout) {
-            feedbackDiv.textContent = "Please select a layout first.";
+            feedbackDiv.textContent = "Please select a floor plan first.";
             feedbackDiv.className = "feedback-text feedback-incorrect";
             return;
           }
@@ -2491,7 +2491,7 @@
                     document.querySelector(`.layout-img[data-choice="${tut_selectedLayout}"]`).classList.add("correct");
                   } 
                   else {
-                    feedbackDiv.innerHTML = `<span class="feedback-incorrect">Incorrect. The correct layout is ${tut_currentLayout.tut_correctAnswer}.</span><br><br><span>Try to understand why this was the correct answer.</span>`;
+                    feedbackDiv.innerHTML = `<span class="feedback-incorrect">Incorrect. The correct floor plan is ${tut_currentLayout.tut_correctAnswer}.</span><br><br><span>Try to understand why this was the correct answer.</span>`;
                     feedbackDiv.className = "feedback-text";
                     document.querySelector(`.layout-img[data-choice="${tut_selectedLayout}"]`).classList.add("incorrect");
                     document.querySelector(`.layout-img[data-choice="${tut_currentLayout.tut_correctAnswer}"]`).classList.add("correct");
@@ -2613,7 +2613,7 @@
                           
                           // Hide the "Please select a layout first" message
                           const feedbackDiv = document.querySelector(".feedback-text");
-                          if (feedbackDiv.textContent === "Please select a layout first.") {
+                          if (feedbackDiv.textContent === "Please select a floor plan first.") {
                             feedbackDiv.textContent = "";
                             feedbackDiv.className = "feedback-text";
                           }
@@ -2891,7 +2891,7 @@
           }
 
           document.getElementById('readyBtn').disabled = false;
-          document.getElementById('readyBtn').title = "You can now select the layout that matches what you've seen";
+          document.getElementById('readyBtn').title = "You can now select the floor plan that matches what you've seen";
           document.getElementById('readyBtn').classList.add('complete');
           document.getElementById('readyBtn').style.cursor = '';
           document.getElementById('readyBtn').style.backgroundColor = '';
@@ -3005,10 +3005,10 @@
             </button>
           </div>
           <div id="panorama"></div>
-          <button id="readyBtn" class="ready-btn">Select Layout</button>
+          <button id="readyBtn" class="ready-btn">Select Floor Plan</button>
           <div class="bottom-section">
             <div id="layout-container">
-              <p>Select the layout you think is correct:</p>
+              <p>Select the floor plan you think is correct:</p>
               <div class="layout-options-container">
                 <!-- Layout options will be inserted here dynamically -->
               </div>
@@ -3090,7 +3090,7 @@
             
             // Hide the "Please select a layout first" message
             const feedbackDiv = document.querySelector(".feedback-text");
-            if (feedbackDiv.textContent === "Please select a layout first.") {
+            if (feedbackDiv.textContent === "Please select a floor plan first.") {
               feedbackDiv.textContent = "";
               feedbackDiv.className = "feedback-text";
             }
@@ -3224,7 +3224,7 @@
             
             // Hide the "Please select a layout first" message
             const feedbackDiv = document.querySelector(".feedback-text");
-            if (feedbackDiv.textContent === "Please select a layout first.") {
+            if (feedbackDiv.textContent === "Please select a floor plan first.") {
               feedbackDiv.textContent = "";
               feedbackDiv.className = "feedback-text";
             }
@@ -3272,7 +3272,7 @@
           const currentLayout = layouts[currentLayoutIndex];
           
           if (!selectedLayout) {
-            feedbackDiv.textContent = "Please select a layout first.";
+            feedbackDiv.textContent = "Please select a floor plan first.";
             feedbackDiv.className = "feedback-text feedback-incorrect";
             return;
           }
@@ -3416,7 +3416,7 @@
                     document.querySelector(`.layout-img[data-choice="${selectedLayout}"]`).classList.add("correct");
                   } 
                   else {
-                    feedbackDiv.innerHTML = `<span class="feedback-incorrect">Incorrect. The correct layout is ${currentLayout.correctAnswer}.</span><br><br><span>Your total earned money is £${totalEarned.toFixed(2)}</span>`;
+                    feedbackDiv.innerHTML = `<span class="feedback-incorrect">Incorrect. The correct floor plan is ${currentLayout.correctAnswer}.</span><br><br><span>Your total earned money is £${totalEarned.toFixed(2)}</span>`;
                     feedbackDiv.className = "feedback-text";
                     document.querySelector(`.layout-img[data-choice="${selectedLayout}"]`).classList.add("incorrect");
                     document.querySelector(`.layout-img[data-choice="${currentLayout.correctAnswer}"]`).classList.add("correct");
@@ -3541,7 +3541,7 @@
                           
                           // Hide the "Please select a layout first" message
                           const feedbackDiv = document.querySelector(".feedback-text");
-                          if (feedbackDiv.textContent === "Please select a layout first.") {
+                          if (feedbackDiv.textContent === "Please select a floor plan first.") {
                             feedbackDiv.textContent = "";
                             feedbackDiv.className = "feedback-text";
                           }
@@ -3604,8 +3604,8 @@
       html: `
         <div style="text-align: left; justify-self: center; justify-items: center">
           <div>
-            <label><strong>Did you sketch or draw the layout while solving the task?</strong><br>(Choose one)</label><br><br>
-            <label><input type="radio" name="sketch" value="1" required> ✍️ Yes – I sketched the layout on paper or digitally</label><br><br>
+            <label><strong>Did you sketch or draw the floor plan while solving the task?</strong><br>(Choose one)</label><br><br>
+            <label><input type="radio" name="sketch" value="1" required> ✍️ Yes – I sketched the floor plan on paper or digitally</label><br><br>
             <label><input type="radio" name="sketch" value="0"> 🚫 No – I didn’t draw anything</label><br><br>
           </div>
         </div>
