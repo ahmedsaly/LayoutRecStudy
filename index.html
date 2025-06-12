@@ -38,6 +38,7 @@
   <!-- Three.js & Panolens -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r105/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/panolens@0.12.0/build/panolens.min.js"></script>
+  
 
   <!-- Experiment Styles -->
   <style>
@@ -53,9 +54,6 @@
       --blur-effect: blur(2px);
     }
     
-    html {
-      zoom: 100%;
-    }
     /* ----------------------
        Base Styles
     ---------------------- */
@@ -1077,7 +1075,7 @@
           name: "PTT Instructions"
         }
     };
-    timeline.push(PTT_instruction );
+    // timeline.push(PTT_instruction );
 
     // Define the task parameters
     const TASK_ITEMS = [
@@ -1161,7 +1159,7 @@
         });
       }
     };
-    timeline.push(PTT_example);
+    // timeline.push(PTT_example);
 
     const PTT = {
       type: jsPsychHtmlButtonResponse,
@@ -1318,7 +1316,7 @@
         });
       },      
     };
-    timeline.push(PTT);
+    // timeline.push(PTT);
 
     // Helper function to draw the circle and lines
     function drawCircle(ctx, task, angle = null) {
@@ -1797,6 +1795,9 @@
             <button id="nextViewBtn" class="next-view-btn" disabled title="Turn around and view the entire scene to enable the Next button">
               Next View
             </button>
+            <div id="viewProgress" class="view-progress" style="text-align: center; font-size: 0.9em; margin-top: 0px; color: #ccc;">
+              View 1 of 4
+            </div>
           </div>
           <div id="panorama" class="panorama-container">
           </div>
@@ -1858,7 +1859,12 @@
             highlight: "next-view-btn"
           },
           {
-            message: "<strong>Earned Money</strong> is the amount you've collected so far.<br><strong>Potential Bonus</strong> is the extra bonus you can earn for this building. <br><br> Note: From the <strong>third view onward</strong>, the bonus begins to decrease.",
+            message: "This shows which view you're currently seeing out of the total available views for this building.<br><br>If you finish seeing all available views, you'll have the option to revisit them one more time.<br><br><strong>See as many as you need</strong> until you feel confident that you understand the <strong>full shape of the building’s floor plan</strong>.",
+            position: "top",
+            highlight: "view-progress"
+          },
+          {
+            message: "<strong>Earned Money</strong> is the amount you've collected so far.<br><strong>Potential Bonus</strong> is the extra bonus you can earn for this building. <br><br> Note: From the <strong>third view onward</strong>, the bonus will <strong style='color: red;'>decrease by £0.10</strong> (10 cents) for each additional view.",
             position: "top",
             highlight: "money-display"
           },
@@ -1868,7 +1874,7 @@
             highlight: "ready-btn"
           },
           {
-            message: "Use this button <strong>only</strong> when you’ve mentally integrated the views and feel confident in matching them to a floor plan.",
+            message: "Use this button <strong>only</strong> when you’ve mentally <strong>integrated</strong> the views and feel <strong>confident</strong> in matching them to a floor plan.",
             position: "top",
             highlight: "ready-btn"
           },
@@ -1934,7 +1940,7 @@
 
           messageBox.innerHTML = `<div style="margin-bottom: 20px;">${step.message}</div>`;
 
-          if (tutorialStep !== 4) {  // Change this index to match your "Select Layout" step
+          if (tutorialStep !== 5) {  // Change this index to match your "Select Layout" step
             const btn = document.createElement('button');
             btn.textContent = 'Continue';
             btn.style.padding = '10px 20px';
@@ -2043,8 +2049,10 @@
           <div class="money-container">
             <div class="money-display"></div>
             <button id="nextViewBtn" class="next-view-btn" disabled title="Turn around and view the entire scene to enable the Next button">
-              Next View
+              Next View (-£0.10)
             </button>
+            <div id="viewProgress" style="text-align: center; font-size: 0.9em; margin-top: 0px; color: #ccc;">
+            </div>
             <button id="revisitBtn" class="next-view-btn" 
                     style="display: none; margin-top: 10px;" 
                     title="-€0.10 to review all previously seen views">
@@ -2094,6 +2102,12 @@
         // Add event listeners for bottom section and hover trigger interaction
         const bottomSection = document.querySelector('.bottom-section');
 
+        // Add this function in trial_combined on_load
+        function tut_updateViewCounter() {
+          document.getElementById('viewProgress').textContent = `(View ${tut_viewIndex + 1} of ${test_layout[tut_currentLayoutIndex].tut_panoramas.length})`;
+        }
+
+
         // Add button click handler
         const readyBtn = document.getElementById('readyBtn');
         readyBtn.addEventListener('click', function() {
@@ -2138,6 +2152,7 @@
         // Initialize panorama
         const panoDiv = document.getElementById('panorama');
         tut_renderPanorama(test_layout[tut_currentLayoutIndex].tut_panoramas[tut_viewIndex], panoDiv);
+        tut_updateViewCounter();
 
         // Update layout options
         const layoutOptionsContainer = document.querySelector('.layout-options-container');
@@ -2191,6 +2206,7 @@
               
               tut_viewIndex++;
               tut_totalViewsViewed++;
+              tut_updateViewCounter();
 
               // Only increment viewsTaken if not in revisit phase
               if (!tut_isRevisitPhase && tut_viewIndex >= 1) {
@@ -2274,6 +2290,7 @@
             // Enable next view button
             document.getElementById('nextViewBtn').disabled = false;
             nextViewBtn.style.cursor = 'not-allowed';
+            tut_updateViewCounter();
             document.getElementById('nextViewBtn').textContent = 'Next View (Free)';
           }
         });
@@ -2512,7 +2529,7 @@
 
                   // Show next layout button if there are more layouts
                   if (tut_currentLayoutIndex < test_layout.length - 1) {
-                    nextLayoutBtn.textContent = 'Next Layout';
+                    nextLayoutBtn.textContent = 'Next Building';
                     nextLayoutBtn.onclick = () => {
                       // logAreaChange('between-layouts');
                       // Reset revisit state
@@ -2551,6 +2568,7 @@
                       nextView.style.pointerEvents = 'auto';
                       nextView.style.opacity = '1';
                       nextView.classList.remove('complete');
+                      tut_updateViewCounter();
                       
                       // Remove fixed class from bottom section to restore normal behavior
                       const bottomSection = document.querySelector('.bottom-section');
@@ -2704,7 +2722,7 @@
 
       return [headers, ...rows].join("\n");
     });
-    timeline.push(save_tutorial_data);
+    // timeline.push(save_tutorial_data);
 
     let currentLayoutIndex = 0;
     let totalEarned = baseMoney;
@@ -2998,6 +3016,8 @@
             <button id="nextViewBtn" class="next-view-btn" disabled title="Turn around and view the entire scene to enable the Next button">
               Next View
             </button>
+            <div id="viewProgress" style="text-align: center; font-size: 0.9em; margin-top: 0px; color: #ccc;">
+            </div>
             <button id="revisitBtn" class="next-view-btn" 
                     style="display: none; margin-top: 10px;" 
                     title="-€0.10 to review all previously seen views">
@@ -3019,7 +3039,7 @@
             <div class="feedback-text"></div>
             <div id="message" class="message-container"></div>
             <button id="submitBtn">Submit Choice</button>
-            <button id="nextLayoutBtn" style="display: none;">Next Layout</button>
+            <button id="nextLayoutBtn" style="display: none;">Next Building</button>
           </div>
         </div>
       `,
@@ -3040,6 +3060,11 @@
 
         // Add event listeners for bottom section and hover trigger interaction
         const bottomSection = document.querySelector('.bottom-section');
+
+        // Add this function in trial_combined on_load
+        function updateViewCounter() {
+          document.getElementById('viewProgress').textContent = `(${viewIndex + 1}/${layouts[currentLayoutIndex].panoramas.length})`;
+        }
 
         // Add button click handler
         const readyBtn = document.getElementById('readyBtn');
@@ -3066,6 +3091,12 @@
         // Initialize panorama
         const panoDiv = document.getElementById('panorama');
         renderPanorama(layouts[currentLayoutIndex].panoramas[viewIndex], panoDiv);
+        updateViewCounter();
+        if (isRevisitPhase || viewIndex < 1) {
+          document.getElementById('nextViewBtn').textContent = 'Next View (Free)';
+        } else {
+          document.getElementById('nextViewBtn').textContent = 'Next View (-£0.10)';  // Explicit
+        }
 
         // Update layout options
         const layoutOptionsContainer = document.querySelector('.layout-options-container');
@@ -3120,6 +3151,13 @@
               
               viewIndex++;
               totalViewsViewed++;
+              updateViewCounter(); 
+              if (isRevisitPhase || viewIndex < 1) {
+                document.getElementById('nextViewBtn').textContent = 'Next View (Free)';
+              } else {
+                document.getElementById('nextViewBtn').textContent = 'Next View (-£0.10)';  // Explicit
+              }
+
               // Only increment viewsTaken if not in revisit phase
               if (!isRevisitPhase && viewIndex >= 2) {
                 viewsForBonus++;
@@ -3208,6 +3246,7 @@
             // Enable next view button
             document.getElementById('nextViewBtn').disabled = false;
             nextViewBtn.style.cursor = 'not-allowed';
+            updateViewCounter();
             document.getElementById('nextViewBtn').textContent = 'Next View (Free)';
           }
         });
@@ -3437,7 +3476,7 @@
 
                   // Show next layout button if there are more layouts
                   if (currentLayoutIndex < layouts.length - 1) {
-                    nextLayoutBtn.textContent = 'Next Layout';
+                    nextLayoutBtn.textContent = `Next Building (${currentLayoutIndex+2}/5)`;
                     nextLayoutBtn.onclick = () => {
                       logAreaChange('between-layouts');
                       isTransitioningLayout = true;
@@ -3482,6 +3521,12 @@
                       nextView.style.pointerEvents = 'auto';
                       nextView.style.opacity = '1';
                       nextView.classList.remove('complete');
+                      updateViewCounter();
+                      if (isRevisitPhase || viewIndex < 1) {
+                        document.getElementById('nextViewBtn').textContent = 'Next View (Free)';
+                      } else {
+                        document.getElementById('nextViewBtn').textContent = 'Next View (-£0.10)';  // Explicit
+                      }
 
                       document.getElementById('readyBtn').disabled = true;
                       // document.getElementById('readyBtn').textContent = 'Next View'
@@ -3616,7 +3661,7 @@
         data.sketch = parseInt(form.get("sketch"));
       }
     };
-    timeline.push(sketch_survey);
+    // timeline.push(sketch_survey);
 
     // After your last trial (after trial_combined), add the save data trial:
     const save_data = saveData(filename, () => {
