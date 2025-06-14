@@ -2049,7 +2049,7 @@
           <div class="money-container">
             <div class="money-display"></div>
             <button id="nextViewBtn" class="next-view-btn" disabled title="Turn around and view the entire scene to enable the Next button">
-              Next View (-£0.10)
+              Next View (-£0.10 Bonus)
             </button>
             <div id="viewProgress" style="text-align: center; font-size: 0.9em; margin-top: 0px; color: #ccc;">
             </div>
@@ -3095,7 +3095,7 @@
         if (isRevisitPhase || viewIndex < 1) {
           document.getElementById('nextViewBtn').textContent = 'Next View (Free)';
         } else {
-          document.getElementById('nextViewBtn').textContent = 'Next View (-£0.10)';  // Explicit
+          document.getElementById('nextViewBtn').textContent = 'Next View (-£0.10 Bonus)';  // Explicit
         }
 
         // Update layout options
@@ -3155,7 +3155,7 @@
               if (isRevisitPhase || viewIndex < 1) {
                 document.getElementById('nextViewBtn').textContent = 'Next View (Free)';
               } else {
-                document.getElementById('nextViewBtn').textContent = 'Next View (-£0.10)';  // Explicit
+                document.getElementById('nextViewBtn').textContent = 'Next View (-£0.10 Bonus)';  // Explicit
               }
 
               // Only increment viewsTaken if not in revisit phase
@@ -3450,12 +3450,21 @@
 
                   // Show feedback
                   if (isCorrect) {
-                    feedbackDiv.innerHTML = `<span class="feedback-correct">Correct! Well done!</span><br><br><span>Your total earned money is £${totalEarned.toFixed(2)}</span>`;
+                    feedbackDiv.innerHTML = `
+                      <span class="feedback-correct">Correct! Well done!</span><br>
+                      <span>You earned the bonus for this building!</span><br>
+                      <span>Your total earned money is <strong style='color:green'>£${totalEarned.toFixed(2)}</strong></span>`;
                     feedbackDiv.className = "feedback-text";
                     document.querySelector(`.layout-img[data-choice="${selectedLayout}"]`).classList.add("correct");
                   } 
                   else {
-                    feedbackDiv.innerHTML = `<span class="feedback-incorrect">Incorrect. The correct floor plan is ${currentLayout.correctAnswer}.</span><br><br><span>Your total earned money is £${totalEarned.toFixed(2)}</span>`;
+                    // feedbackDiv.innerHTML = `<span class="feedback-incorrect">Incorrect. The correct floor plan is ${currentLayout.correctAnswer}.</span><br><br><span>Your total earned money is £${totalEarned.toFixed(2)}</span>`;
+                    feedbackDiv.innerHTML = `
+                      <span class="feedback-incorrect">Incorrect. The correct floor plan is <strong>${currentLayout.correctAnswer}</strong>.</span><br>
+                      <span>You missed the bonus for this building!</span><br>
+                      <span>Try exploring more views before selecting a floor plan to increase your chances of earning the bonus.</span><br>
+                      <span>Your total earned money is <strong>£${totalEarned.toFixed(2)}</strong>.</span>
+                    `;
                     feedbackDiv.className = "feedback-text";
                     document.querySelector(`.layout-img[data-choice="${selectedLayout}"]`).classList.add("incorrect");
                     document.querySelector(`.layout-img[data-choice="${currentLayout.correctAnswer}"]`).classList.add("correct");
@@ -3525,7 +3534,7 @@
                       if (isRevisitPhase || viewIndex < 1) {
                         document.getElementById('nextViewBtn').textContent = 'Next View (Free)';
                       } else {
-                        document.getElementById('nextViewBtn').textContent = 'Next View (-£0.10)';  // Explicit
+                        document.getElementById('nextViewBtn').textContent = 'Next View (-£0.10 Bonus)';  // Explicit
                       }
 
                       document.getElementById('readyBtn').disabled = true;
