@@ -2850,7 +2850,7 @@
 
       return [headers, ...rows].join("\n");
     });
-    timeline.push(save_tutorial_data);
+    // timeline.push(save_tutorial_data);
 
     let currentLayoutIndex = 0;
     let totalEarned = baseMoney;
@@ -3557,6 +3557,7 @@
             messageDiv.className = "message-container";
             messageDiv.style.display = "block";
 
+            document.getElementById('submitBtn').style.display = 'none';
             // Add click handlers for confidence options
             const confidenceOptions = messageDiv.querySelectorAll('.confidence-option');
             const submitBtn = document.getElementById('submitBtn');
