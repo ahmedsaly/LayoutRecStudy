@@ -2121,10 +2121,13 @@
               font-size: 1.5em;
               font-weight: bold;
               color: black;
+              background-color: #eee;
+              padding: 6px 12px;
+              border-radius: 8px;
               z-index: 10;
               display: none;
             ">
-              <span id="timer-value">20</span>
+              ⏳ <span id="timer-value">00:20</span>
             </div>
             <div id="layout-container">
               <p>Select the floor plan you think is correct:</p>
@@ -2170,14 +2173,16 @@
           let timeLeft = duration;
 
           timerEl.style.display = "block";
-          valueEl.textContent = timeLeft;
+          valueEl.textContent = `00:${timeLeft < 10 ? '0' : ''}${timeLeft}`;
+          // valueEl.textContent = timeLeft;
           timerEl.style.color = "black"; // Reset color
 
           tut_timerExpired = false;
 
           tut_timerInterval = setInterval(() => {
             timeLeft--;
-            valueEl.textContent = timeLeft;
+            // valueEl.textContent = timeLeft;
+            valueEl.textContent = `00:${timeLeft < 10 ? '0' : ''}${timeLeft}`;
 
             // Visual alert when 5 seconds left
             if (timeLeft <= 5) {
@@ -2845,7 +2850,7 @@
 
       return [headers, ...rows].join("\n");
     });
-    timeline.push(save_tutorial_data);
+    // timeline.push(save_tutorial_data);
 
     let currentLayoutIndex = 0;
     let totalEarned = baseMoney;
@@ -3164,10 +3169,13 @@
               font-size: 1.5em;
               font-weight: bold;
               color: black;
+              background-color: #eee;
+              padding: 6px 12px;
+              border-radius: 8px;
               z-index: 10;
               display: none;
             ">
-              <span id="timer-value">20</span>
+              ⏳ <span id="timer-value">00:20</span>
             </div>
             <div id="layout-container">
               <p>Select the floor plan you think is correct:</p>
@@ -3214,14 +3222,14 @@
           let timeLeft = duration;
 
           timerEl.style.display = "block";
-          valueEl.textContent = timeLeft;
+          valueEl.textContent = `00:${timeLeft < 10 ? '0' : ''}${timeLeft}`;
           timerEl.style.color = "black"; // Reset color
 
           timerExpired = false;
 
           timerInterval = setInterval(() => {
             timeLeft--;
-            valueEl.textContent = timeLeft;
+            valueEl.textContent = `00:${timeLeft < 10 ? '0' : ''}${timeLeft}`;
 
             // Visual alert when 5 seconds left
             if (timeLeft <= 5) {
@@ -3665,7 +3673,7 @@
                     if (isCorrect) {
                       feedbackDiv.innerHTML = `
                         <span class="feedback-correct">Correct! Well done!</span><br>
-                        <span>But you missed the bonus for this building!</span><br>
+                        <span>But you <span style="color: red">missed the bonus</span> for this building!</span><br>
                         <span>To get the bonus, you should select the correct asnwer within the <strong>time frame!</strong></span><br>
                         <span>Your total earned money is <strong>£${totalEarned.toFixed(2)}</strong></span>`;
                       feedbackDiv.className = "feedback-text";
