@@ -1842,7 +1842,7 @@
               z-index: 10;
               display: none;
             ">
-              <span id="timer-value">20</span>
+              <span id="timer-value">40</span>
             </div>
             <div id="layout-container">
               <p>Select the floor plan you think is correct:</p>
@@ -1920,7 +1920,7 @@
             highlight: "ready-btn"
           },
           {
-            message: "After clicking the button, a <strong>20-second timer</strong> will start. You must choose a floor plan and submit your answer within this time.",
+            message: "After clicking the button, a <strong>40-second timer</strong> will start. You must choose a floor plan and submit your answer within this time.",
             position: "top"
           },
           {
@@ -2127,7 +2127,7 @@
               z-index: 10;
               display: none;
             ">
-              ⏳ <span id="timer-value">00:20</span>
+              ⏳ <span id="timer-value">00:40</span>
             </div>
             <div id="layout-container">
               <p>Select the floor plan you think is correct:</p>
@@ -2167,7 +2167,7 @@
           document.getElementById('viewProgress').textContent = `(View ${tut_viewIndex + 1} of ${test_layout[tut_currentLayoutIndex].tut_panoramas.length})`;
         }
 
-        function startTutorialTimer(duration = 20) {
+        function startTutorialTimer(duration = 40) {
           const timerEl = document.getElementById("tutorial-timer");
           const valueEl = document.getElementById("timer-value");
           let timeLeft = duration;
@@ -2254,7 +2254,7 @@
               if (tut_viewer && tut_viewer.OrbitControls) {
                 tut_viewer.OrbitControls.enabled = false;
               }
-              startTutorialTimer(20); // or any duration
+              startTutorialTimer(40); // or any duration
             });
           }
         });
@@ -3175,7 +3175,7 @@
               z-index: 10;
               display: none;
             ">
-              ⏳ <span id="timer-value">00:20</span>
+              ⏳ <span id="timer-value">00:40</span>
             </div>
             <div id="layout-container">
               <p>Select the floor plan you think is correct:</p>
@@ -3216,7 +3216,7 @@
           document.getElementById('viewProgress').textContent = `(${viewIndex + 1}/${layouts[currentLayoutIndex].panoramas.length})`;
         }
 
-        function startTutorialTimer(duration = 20) {
+        function startTutorialTimer(duration = 40) {
           const timerEl = document.getElementById("tutorial-timer");
           const valueEl = document.getElementById("timer-value");
           let timeLeft = duration;
@@ -3284,7 +3284,7 @@
             if (act_viewer && act_viewer.OrbitControls) {
               act_viewer.OrbitControls.enabled = false;
             }
-            startTutorialTimer(20);
+            startTutorialTimer(40);
           }
         });
 
