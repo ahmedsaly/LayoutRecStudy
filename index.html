@@ -2850,7 +2850,7 @@
 
       return [headers, ...rows].join("\n");
     });
-    // timeline.push(save_tutorial_data);
+    timeline.push(save_tutorial_data);
 
     let currentLayoutIndex = 0;
     let totalEarned = baseMoney;
@@ -4050,12 +4050,12 @@
     timeline.push(save_layout_data);
     timeline.push(save_log_data);
 
-
+    
     const debrief_block = {
       type: jsPsychHtmlKeyboardResponse,
       stimulus: function () {
         // Replace this with your actual Prolific completion URL
-        const prolificURL = "https://app.prolific.com/submissions/complete?cc=C1MCKMWQ";
+        const prolificURL = "https://app.prolific.com/submissions/complete?cc=CJ1YEOC7";
         
         return `
           <div class="welcome-message">
@@ -4082,7 +4082,7 @@
 
             // Remove the handler so there's no alert
             window.removeEventListener('beforeunload', beforeUnloadHandler);
-            window.location.href = "https://app.prolific.com/submissions/complete?cc=C1MCKMWQ";
+            window.location.href = "https://app.prolific.com/submissions/complete?cc=CJ1YEOC7";
           }
         }, 1000);
       },
