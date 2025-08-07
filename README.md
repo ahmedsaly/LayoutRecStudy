@@ -26,8 +26,8 @@ Web-based 360°-panorama experiment for studying how people reconstruct indoor l
 
 ## Project Overview
 * **Goal** – quantify how viewpoint overlap, sequence order, and landmarks affect layout recognition.  
-* **Stack** – plain **`jsPsych 8.2.1`** + **Panolens/Three.js**; no server-side code.  
-* **Dataflow** – browser → **`jspsych-pipe`** (Datapipe) → OSF storage (CSV per participant).  
+* **Stack** – plain **`jsPsych 8.2.1`** + **`Panolens`**/**`Three.js`**; no server-side code.  
+* **Dataflow** – browser → **`jspsych-pipe`** (Datapipe) → **`OSF`** storage (CSV per participant).  
 * **Raw-data format & column dictionary** – see the project Wiki @ https://osf.io/8e7pf/ → “Raw_Data README”.
 
 ---
