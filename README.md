@@ -9,10 +9,10 @@ Web-based 360°-panorama experiment for studying how people reconstruct indoor l
 2. [Branches & Versions](#branches--versions)  
 3. [Quick Start – run locally in 2 mins](#quick-start--run-locally-in-2-mins)  
 4. [Full Setup for Data Collection](#full-setup-for-data-collection)  
-   1. [Create a Datapipe project](#Create-a-Datapipe-project)  
-   2. [Connect Datapipe ⇄ OSF storage](#Connect-Datapipe--OSF-storage)  
-   3. [Insert your `experiment_id`](#Insert-your-`experiment_id`)  
-   4. [Go live](#Publish-on-Prolific--MTurk)  
+   1. [Create a Datapipe project](#step-1)  
+   2. [Connect Datapipe ⇄ OSF storage](#step-2)  
+   3. [Insert your `experiment_id`](#step-3)  
+   4. [Go live](#step-4)  
 5. [Built-in participation checks (optional)](#Built-in-participation-checks-(optional))  
 6. [Repository Structure](#repository-structure)  
 7. [Customising the Stimuli](#customising-the-stimuli)  
@@ -54,14 +54,14 @@ python -m http.server 8000
 
 ## Full Setup for Data Collection
 
-1. **Create a Datapipe project**  
+1. <a id="step-1"></a>**Create a Datapipe project**  
    * Go to <https://app.datapipe.io> → *New experiment* → choose **jsPsych**.  
    * Copy the generated *Experiment ID* (looks like `fdgEG5ywEnth`).
   
-2. **Connect Datapipe ⇄ OSF storage**
+2. <a id="step-2"></a>**Connect Datapipe ⇄ OSF storage**
    Datapipe → Settings › Storage → Connect OSF → authorise & pick the OSF component/folder you want the CSVs to land in.
 
-2. **Insert the "experiment_id"
+2. <a id="step-3"></a>**Insert the "experiment_id"
    Open `index.html` and replace the *Experiment ID* inside the `saveData` helper: 
    ```js
    const saveData = (filename, dataFunction) => ({
@@ -72,7 +72,7 @@ python -m http.server 8000
    });
    ```
 
-4. **Go live**  
+4. <a id="step-4"></a>**Go live**  
    * *Push to GitHub → enable GitHub Pages (branch ☑).*
    * **Insert your Prolific study link**
      In `index.html`, search for `prolificURL` (appears twice) and update both  
