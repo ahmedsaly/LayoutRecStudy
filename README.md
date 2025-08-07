@@ -2,7 +2,7 @@
 # LayoutRecStudy 🖼️🏠  
 Web-based 360°-panorama experiment for studying how people reconstruct indoor layouts from a minimal set of views.
 
-![LayoutRecStudy demo](docs/assets/exp2_demo.gif)
+![LayoutRecStudy demo](docs/assets/Exp2_demo.gif)
 
 ---
 
