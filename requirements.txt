@@ -1,0 +1,15 @@
+# Client-side libraries loaded via CDN in index.html
+# Listed here to document precise versions for offline or local installation.
+
+jspsych==8.2.1
+@jspsych/plugin-html-keyboard-response==2.1.0
+@jspsych/plugin-image-keyboard-response==2.1.0
+@jspsych/plugin-preload==2.1.0
+@jspsych/plugin-html-button-response==2.1.0
+@jspsych/plugin-browser-check==2.1.0
+@jspsych/plugin-survey-multi-choice==2.1.0
+@jspsych/plugin-survey-html-form==2.1.0
+@jspsych-contrib/plugin-pipe
+three==0.105.0
+panolens==0.12.0
+
