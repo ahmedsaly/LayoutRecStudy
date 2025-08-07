@@ -4,6 +4,11 @@ Web-based 360°-panorama experiment for studying how people reconstruct indoor l
 
 ![LayoutRecStudy demo](docs/assets/Exp2_demo.gif)
 
+<p align="center">
+  <img src="docs/assets/Exp2_demo.gif" alt="LayoutRecStudy demo" width="820">
+</p>
+
+
 ---
 
 ## Table of Contents  
