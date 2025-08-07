@@ -9,18 +9,18 @@ Web-based 360°-panorama experiment for studying how people reconstruct indoor l
 2. [Branches & Versions](#branches--versions)  
 3. [Quick Start – run locally in 2 mins](#quick-start--run-locally-in-2-mins)  
 4. [Full Setup for Data Collection](#full-setup-for-data-collection)  
-   1. [Create a Datapipe project](#step-1)  
-   2. [Connect Datapipe ⇄ OSF storage](#step-2)  
-   3. [Insert your `experiment_id`](#step-3)  
-   4. [Publish on Prolific / MTurk](#step-4)  
-5. [Built-in participation checks (optional)](#checks)  
+   1. [Create a Datapipe project](#Create-a-Datapipe-project)  
+   2. [Connect Datapipe ⇄ OSF storage](#Connect-Datapipe--OSF-storage)  
+   3. [Insert your `experiment_id`](#Insert-your-`experiment_id`)  
+   4. [Go live](#Publish-on-Prolific--MTurk)  
+5. [Built-in participation checks (optional)](#Built-in-participation-checks-(optional))  
 6. [Repository Structure](#repository-structure)  
 7. [Customising the Stimuli](#customising-the-stimuli)  
 8. [Citing or Re-using](#citing-or-re-using) 
 
 ---
 
-## <a id="project-overview"></a>Project Overview
+## Project Overview
 * **Goal** – quantify how viewpoint overlap, sequence order, and landmarks affect layout recognition.  
 * **Stack** – plain **`jsPsych 8.2.1`** + **Panolens/Three.js**; no server-side code.  
 * **Dataflow** – browser → **`jspsych-pipe`** (Datapipe) → OSF storage (CSV per participant).  
@@ -28,7 +28,7 @@ Web-based 360°-panorama experiment for studying how people reconstruct indoor l
 
 ---
 
-## <a id="branches--versions"></a>Branches & Versions
+## Branches & Versions
 
 | Branch | Experiment version | Main difference |
 |--------|--------------------|-----------------|
@@ -61,7 +61,7 @@ python -m http.server 8000
 2. **Connect Datapipe ⇄ OSF storage**
    Datapipe → Settings › Storage → Connect OSF → authorise & pick the OSF component/folder you want the CSVs to land in.
 
-2. **Insert the "experiment_id" into `index.html`**
+2. **Insert the "experiment_id"
    Open `index.html` and replace the *Experiment ID* inside the `saveData` helper: 
    ```js
    const saveData = (filename, dataFunction) => ({
@@ -72,7 +72,7 @@ python -m http.server 8000
    });
    ```
 
-4. **Deploy**  
+4. **Go live**  
    * *Push to GitHub → enable GitHub Pages (branch ☑).*
    * **Insert your Prolific study link**
      In `index.html`, search for `prolificURL` (appears twice) and update both  
@@ -147,7 +147,7 @@ They’re not bullet-proof (determined users can bypass them), but they deter ca
    
 ---
 
-## Repository layout
+## Repository Structure
 
 ```
 LayoutRecStudy/
@@ -158,7 +158,7 @@ LayoutRecStudy/
 ├─ index.html         # main experiment (branch-specific)
 └─ README.md
 ```
-Customising the Stimuli
+## Customising the Stimuli
 1. Drop new panoramas inside panorama/<Building_ID>/… (follow the existing naming style).
 
 2. Edit layoutConfigs (≈ line 400 in index.html) to point at your images & correct answer.
