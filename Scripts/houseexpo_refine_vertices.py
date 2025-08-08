@@ -30,8 +30,13 @@ import json
 import matplotlib.pyplot as plt
 
 
-# Specify your folder path here
-folder_path = "path/to/your/json/files"  # Change this to your actual folder
+# Specify your input folder where the original JSON files are located
+folder_path = "path/to/original/jsons/folder"  # Change this to your actual folder
+
+# Specify your output folder where the filtered JSON files will be saved
+output_path = "path/to/filtered/jsons/disred/lcoation" # Change this to your actual folder
+os.makedirs(output_path, exist_ok=True)
+
 
 TOL = 1e-6
 
@@ -298,6 +303,15 @@ def process_folder(folder_path):
         # Close the polygon by repeating the first vertex
         filtered_verts.append(filtered_verts[0])  # Close the polygon
         print(f"Filtered vertices for {file}: {filtered_verts}")
+
+        out_data = dict(data)              # copy everything
+        out_data["verts"] = filtered_verts # use EXACTLY the filtered_verts you built
+
+        out_path = os.path.join(output_path, file)
+        with open(out_path, "w", encoding="utf-8") as f_out:
+            json.dump(out_data, f_out, indent=4)
+
+        print(f"Wrote filtered JSON → {out_path}")
         
         # Visual comparison
         plt.figure(figsize=(8, 6))
@@ -308,3 +322,4 @@ def process_folder(folder_path):
         plt.show()
 
 process_folder(folder_path)
+
