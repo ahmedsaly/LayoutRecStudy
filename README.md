@@ -65,7 +65,7 @@ python -m http.server 8000
 2. <a id="step-2"></a>**Connect Datapipe ⇄ OSF storage**
    Datapipe → Settings › Storage → Connect OSF → authorise & pick the OSF component/folder you want the CSVs to land in.
 
-2. <a id="step-3"></a>**Insert the "experiment_id"
+2. <a id="step-3"></a>**Insert the "experiment_id"**
    Open `index.html` and replace the *Experiment ID* inside the `saveData` helper: 
    ```js
    const saveData = (filename, dataFunction) => ({
